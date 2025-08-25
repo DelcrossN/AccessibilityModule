@@ -1,0 +1,27 @@
+accessibility.settings:
+  title: 'Accessibility Settings'
+  description: 'Configure accessibility features'
+  route_name: accessibility.settings
+  parent: accessibility.admin
+  weight: 0
+
+accessibility.llm_test:
+  title: 'LLM Integration Test'
+  description: 'Test the LLM integration for accessibility analysis'
+  route_name: accessibility.llm_test
+  parent: accessibility.admin
+  weight: 5
+
+accessibility.llm_settings:
+  title: 'LLM Settings'
+  description: 'Configure LLM integration settings'
+  route_name: accessibility.llm_settings
+  parent: accessibility.admin
+  weight: 1
+
+accessibility.admin:
+  title: 'Accessibility'
+  description: 'Accessibility tools and settings'
+  route_name: accessibility.dashboard
+  parent: system.admin_config
+  weight: 100

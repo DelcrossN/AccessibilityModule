@@ -1,0 +1,101 @@
+accessibility.settings:
+  path: '/admin/config/accessibility/settings'
+  defaults:
+    _form: 'Drupal\accessibility\Form\AccSettingsForm'
+    _title: 'Accessibility Settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Main dashboard for accessibility tools.
+accessibility.dashboard:
+  path: '/admin/config/accessibility'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::dashboard'
+    _title: 'Accessibility Dashboard'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Statistics overview page.
+accessibility.stats:
+  path: '/admin/reports/accessibility/stats'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::build'
+    _title: 'Accessibility Statistics'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Accessibility report for a specific path.
+accessibility.report:
+  path: '/admin/config/accessibility/report/{path}'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::report'
+    _title: 'Accessibility Report'
+    path: '/'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+    parameters:
+      path:
+        type: path
+        schema:
+          type: string
+          pattern: '^[^/]*$'
+
+# LLM Test Page
+accessibility.llm_test:
+  path: '/admin/config/accessibility/llm-test'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\LlmTestController::testPage'
+    _title: 'LLM Accessibility Test'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# AJAX endpoint for LLM test form submission
+accessibility.llm_test.ajax:
+  path: '/accessibility/llm-test/ajax'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\LlmTestController::handleAjax'
+    _title: 'LLM Test AJAX'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _auth: [basic_auth, cookie]
+
+# AJAX endpoint for fetching updated statistics.
+accessibility.stats.ajax:
+  path: '/admin/reports/accessibility/stats/ajax'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::handleAjax'
+    _title: 'Accessibility Stats AJAX'
+  requirements:
+    _permission: 'administer site configuration'
+  methods: [GET]
+
+# LLM Settings Page
+accessibility.llm_settings:
+  path: '/admin/config/accessibility/llm-settings'
+  defaults:
+    _form: 'Drupal\accessibility\Form\LlmSettingsForm'
+    _title: 'LLM Settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Axe Report
+accessibility.save_axe_report:
+  path: '/save-axe-report'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AxeReportController::saveReport'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'

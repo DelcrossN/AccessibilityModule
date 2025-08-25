@@ -1,0 +1,54 @@
+# Defines the external axe-core library as a reusable asset.
+axe-core:
+  remote: https://github.com/dequelabs/axe-core
+  version: '4.8.2'
+  license:
+    name: MPL-2.0
+    url: https://github.com/dequelabs/axe-core/blob/develop/LICENSE
+    gpl-compatible: true
+  js:
+    https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.8.2/axe.min.js: { type: external, minified: true }
+
+# Accessibility scanner functionality
+axe_scanner:
+  version: 1.x
+  js:
+    js/axe-scanner.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupalSettings
+    - accessibility/axe-core
+    - core/once
+
+# Chart.js library for data visualization
+chartjs:
+  remote: https://www.chartjs.org/
+  version: '4.4.1'
+  license:
+    name: MIT
+    url: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md
+    gpl-compatible: true
+  js:
+    https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js: { type: external, minified: true }
+  dependencies:
+    - core/jquery
+
+# LLM test functionality
+llm_test:
+  version: 1.x
+  js:
+    js/llm-test.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.ajax
+
+mistral_llm:
+  version: 1.x
+  js:
+    js/mistral-llm.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.ajax

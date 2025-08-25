@@ -1,0 +1,153 @@
+{#
+/**
+ * @file
+ * Template for displaying Accessibility scan reports.
+ *
+ * Available variables:
+ * - report: The scan results containing violations and metadata.
+ * - scanned_url: The URL that was scanned.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="accessibility-report" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px;">
+  <header class="report-header" style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0;">
+    <h1 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 28px; font-weight: 600;">
+      {{ 'Accessibility Scan Report'|t }}
+    </h1>
+
+    <div class="scanned-url" style="margin-bottom: 10px;">
+      <strong>{{ 'Scanned URL:'|t }}</strong>
+      <a href="{{ scanned_url }}" target="_blank" rel="noopener noreferrer" style="color: #2980b9; text-decoration: none; word-break: break-all;">
+        {{ scanned_url }}
+      </a>
+    </div>
+
+    {% if report.timestamp is defined %}
+      <div class="report-timestamp" style="color: #7f8c8d; font-size: 0.9em;">
+        <strong>{{ 'Scan completed:'|t }}</strong>
+        {{ report.timestamp|date('F j, Y \a\t g:i a') }}
+      </div>
+    {% endif %}
+
+    {% if report.score is defined %}
+      <div class="accessibility-score" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; display: inline-block;">
+        <strong>Accessibility Score:</strong>
+        <span style="font-weight: bold; color: {{ report.score >= 80 ? '#27ae60' : (report.score >= 60 ? '#f39c12' : '#e74c3c') }}">
+          {{ report.score }}/100
+        </span>
+      </div>
+    {% endif %}
+  </header>
+
+  <div class="report-summary" style="margin-bottom: 30px;">
+    <h2 style="color: #2c3e50; font-size: 22px; margin: 0 0 15px 0; padding-bottom: 5px; border-bottom: 2px solid #3498db; display: inline-block;">
+      {{ 'Summary'|t }}
+    </h2>
+
+    {% set critical = report.violations|filter(v => v.impact == 'critical')|length %}
+    {% set serious = report.violations|filter(v => v.impact == 'serious')|length %}
+    {% set moderate = report.violations|filter(v => v.impact == 'moderate')|length %}
+    {% set minor = report.violations|filter(v => v.impact == 'minor')|length %}
+
+    <div class="summary-cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+      <div class="summary-card critical" style="background-color: #fde8e8; border-left: 4px solid #e74c3c; padding: 15px; border-radius: 4px;">
+        <div class="summary-count" style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{ critical }}</div>
+        <div class="summary-label" style="color: #7f8c8d; font-size: 0.9em;">Critical Issues</div>
+      </div>
+
+      <div class="summary-card serious" style="background-color: #fef5e7; border-left: 4px solid #f39c12; padding: 15px; border-radius: 4px;">
+        <div class="summary-count" style="font-size: 24px; font-weight: bold; color: #f39c12;">{{ serious }}</div>
+        <div class="summary-label" style="color: #7f8c8d; font-size: 0.9em;">Serious Issues</div>
+      </div>
+
+      <div class="summary-card moderate" style="background-color: #fef9e7; border-left: 4px solid #f1c40f; padding: 15px; border-radius: 4px;">
+        <div class="summary-count" style="font-size: 24px; font-weight: bold; color: #f1c40f;">{{ moderate }}</div>
+        <div class="summary-label" style="color: #7f8c8d; font-size: 0.9em;">Moderate Issues</div>
+      </div>
+
+      <div class="summary-card minor" style="background-color: #e8f4fc; border-left: 4px solid #3498db; padding: 15px; border-radius: 4px;">
+        <div class="summary-count" style="font-size: 24px; font-weight: bold; color: #3498db;">{{ minor }}</div>
+        <div class="summary-label" style="color: #7f8c8d; font-size: 0.9em;">Minor Issues</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="violations-list">
+    <h2 style="color: #2c3e50; font-size: 22px; margin: 0 0 15px 0; padding-bottom: 5px; border-bottom: 2px solid #3498db; display: inline-block;">
+      {{ 'Accessibility Issues'|t }}
+    </h2>
+
+    {% if report.violations is empty %}
+      <div class="no-violations" style="background-color: #e8f5e9; color: #27ae60; padding: 20px; border-radius: 4px; text-align: center; margin-top: 20px;">
+        <p style="margin: 0; font-weight: 500;">{{ 'No accessibility issues found!'|t }}</p>
+      </div>
+    {% else %}
+      {% for violation in report.violations %}
+        <div class="violation" style="margin-bottom: 30px; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
+          <div class="violation-header" style="padding: 12px 15px; background-color: {{ violation.impact == 'critical' ? '#fde8e8' : (violation.impact == 'serious' ? '#fef5e7' : (violation.impact == 'moderate' ? '#fef9e7' : '#e8f4fc')) }}; border-left: 4px solid {{ violation.impact == 'critical' ? '#e74c3c' : (violation.impact == 'serious' ? '#f39c12' : (violation.impact == 'moderate' ? '#f1c40f' : '#3498db')) }};">
+            <h3 style="margin: 0; font-size: 18px; color: #2c3e50;">
+              <span class="impact-badge" style="display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: white; background-color: {{ violation.impact == 'critical' ? '#e74c3c' : (violation.impact == 'serious' ? '#f39c12' : (violation.impact == 'moderate' ? '#f1c40f' : '#3498db')) }}; margin-right: 10px;">
+                {{ violation.impact }}
+              </span>
+              {{ violation.help }}
+            </h3>
+            {% if violation.helpUrl %}
+              <a href="{{ violation.helpUrl }}" target="_blank" rel="noopener noreferrer" style="color: #3498db; font-size: 0.9em; text-decoration: none; display: inline-block; margin-top: 5px;">
+                Learn more about this issue
+              </a>
+            {% endif %}
+          </div>
+
+          <div class="violation-content" style="padding: 15px; background-color: white;">
+            <div class="violation-description" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+              <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #2c3e50;">Description</h4>
+              <p style="margin: 0; color: #555;">{{ violation.description|raw }}</p>
+            </div>
+
+            {% if violation.nodes is not empty %}
+              <div class="violation-nodes">
+                <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #2c3e50;">
+                  Affected Elements ({{ violation.nodes|length }})
+                </h4>
+
+                {% for node in violation.nodes %}
+                  <div class="node" style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em; overflow-x: auto;">
+                    <div class="node-target" style="margin-bottom: 8px; color: #e74c3c; font-weight: 500;">
+                      {{ node.target[0]|default('Unknown element') }}
+                    </div>
+                    {% if node.failureSummary is defined %}
+                      <div class="node-failure" style="color: #7f8c8d; margin-bottom: 8px; white-space: pre-line; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                        {{ node.failureSummary }}
+                      </div>
+                    {% endif %}
+                    {% if node.html is defined %}
+                      <div class="node-html" style="background-color: #2c3e50; color: #ecf0f1; padding: 8px; border-radius: 3px; overflow-x: auto;">
+                        {{ node.html }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {% if report.metadata is defined %}
+    <footer class="report-footer" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #7f8c8d; font-size: 0.9em;">
+      <p style="margin: 5px 0;">
+        <strong>Scanner:</strong> {{ report.metadata.scanner }} v{{ report.metadata.version }}
+      </p>
+      {% if report.metadata.generated is defined %}
+        <p style="margin: 5px 0;">
+          <strong>Report generated:</strong> {{ report.metadata.generated|date('F j, Y \a\t g:i a') }}
+        </p>
+      {% endif %}
+    </footer>
+  {% endif %}
+</div>
+
+{{ attach_library('accessibility/report') }}

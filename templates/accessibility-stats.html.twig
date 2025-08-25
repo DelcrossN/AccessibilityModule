@@ -1,0 +1,210 @@
+{#
+/**
+ * @file
+ * Template for the Accessibility Statistics page.
+ *
+ * Available variables:
+ * - dashboard_url: URL to the dashboard.
+ * - config_url: URL to the configuration page.
+ *
+ * @ingroup themeable
+ */
+#}
+{{ attach_library('accessibility/stats') }}
+
+<div class="accessibility-stats">
+  <header class="stats-header">
+    <h1>{{ 'Accessibility Statistics'|t }}</h1>
+    <p class="stats-description">
+      {{ 'View and analyze accessibility metrics over time.'|t }}
+    </p>
+  </header>
+
+  <div class="stats-actions">
+    <div class="stats-filters">
+      <div class="form-item">
+        <label for="timeframe" class="form-item__label">{{ 'Timeframe'|t }}</label>
+        <select id="timeframe" class="form-select">
+          <option value="7">{{ 'Last 7 days'|t }}</option>
+          <option value="30" selected>{{ 'Last 30 days'|t }}</option>
+          <option value="90">{{ 'Last 90 days'|t }}</option>
+          <option value="365">{{ 'Last year'|t }}</option>
+          <option value="custom">{{ 'Custom...'|t }}</option>
+        </select>
+      </div>
+
+      {# The "View" filter is the first step in the custom flow, hidden by default. #}
+      <div class="form-item" id="view-by-wrapper" style="display: none;">
+        <label for="view-by" class="form-item__label">{{ 'View'|t }}</label>
+        <select id="view-by" class="form-select">
+          <option value="" selected disabled>{{ 'Select...'|t }}</option>
+          <option value="day">{{ 'Single Day'|t }}</option>
+          <option value="week">{{ 'Date Range'|t }}</option>
+        </select>
+      </div>
+
+      {# A SINGLE date picker that will be controlled by JavaScript. #}
+      <div class="form-item" id="custom-date-picker-wrapper" style="display: none;">
+        <label for="custom-date-picker" id="custom-date-picker-label" class="form-item__label">{{ 'Select Date'|t }}</label>
+        <input type="date" id="custom-date-picker" class="form-date">
+      </div>
+
+      <div class="form-item">
+        <label for="chart-type" class="form-item__label">{{ 'Chart Type'|t }}</label>
+        <select id="chart-type" class="form-select">
+          <option value="bar">{{ 'Bar'|t }}</option>
+          <option value="line">{{ 'Line'|t }}</option>
+          <option value="pie">{{ 'Pie'|t }}</option>
+          <option value="doughnut">{{ 'Doughnut'|t }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-buttons">
+      <a href="{{ dashboard_url }}" class="button button--secondary">
+        <span class="icon icon-arrow-left"></span> {{ 'Back to Dashboard'|t }}
+      </a>
+      <a href="{{ config_url }}" class="button">
+        <span class="icon icon-cog"></span> {{ 'Settings'|t }}
+      </a>
+      <button type="button" id="export-stats" class="button button--primary">
+        <span class="icon icon-download"></span> {{ 'Export Data'|t }}
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stats-card stats-card--primary">
+      <div class="stats-card__icon">
+        <span class="icon icon-error"></span>
+      </div>
+      <div class="stats-card__content">
+        <h3 class="stats-card__title">{{ 'Total Issues'|t }}</h3>
+        <div class="stats-card__value" id="total-issues">--</div>
+        <div class="stats-card__trend trend-up">+12% from last period</div>
+      </div>
+    </div>
+
+    <div class="stats-card stats-card--success">
+      <div class="stats-card__icon">
+        <span class="icon icon-check"></span>
+      </div>
+      <div class="stats-card__content">
+        <h3 class="stats-card__title">{{ 'Fixed Issues'|t }}</h3>
+        <div class="stats-card__value" id="fixed-issues">--</div>
+        <div class="stats-card__trend trend-down">-5% from last period</div>
+      </div>
+    </div>
+
+    <div class="stats-card stats-card--warning">
+      <div class="stats-card__icon">
+        <span class="icon icon-warning"></span>
+      </div>
+      <div class="stats-card__content">
+        <h3 class="stats-card__title">{{ 'High Priority'|t }}</h3>
+        <div class="stats-card__value" id="high-priority">--</div>
+        <div class="stats-card__trend trend-up">+3% from last period</div>
+      </div>
+    </div>
+
+    <div class="stats-card stats-card--info">
+      <div class="stats-card__icon">
+        <span class="icon icon-info"></span>
+      </div>
+      <div class="stats-card__content">
+        <h3 class="stats-card__title">{{ 'Pages Scanned'|t }}</h3>
+        <div class="stats-card__value" id="pages-scanned">--</div>
+        <div class="stats-card__trend">+24 this month</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-wrapper">
+      <div class="chart-header">
+        <h2 class="chart-title">{{ 'Accessibility Issues Over Time'|t }}</h2>
+        <div class="zoom-controls">
+          <button type="button" id="reset-zoom-btn" class="button button--small">{{ 'Reset Zoom'|t }}</button>
+          <input type="range" id="zoom-slider" class="zoom-slider" min="1" max="10" value="1" step="0.1" aria-label="{{ 'Chart zoom slider'|t }}">
+        </div>
+      </div>
+      <canvas id="accessibility-chart"></canvas>
+    </div>
+
+    <div class="chart-sidebar">
+      <div class="chart-sidebar__section">
+        <h3 class="chart-sidebar__title">{{ 'Top Issues'|t }}</h3>
+        <ol class="issue-list" id="top-issues">
+          {# This list will be populated by JavaScript. #}
+        </ol>
+      </div>
+
+      <div class="chart-sidebar__section">
+        <h3 class="chart-sidebar__title">{{ 'Quick Actions'|t }}</h3>
+        <div class="action-buttons">
+          <button type="button" id="scan-now-btn" class="button button--small">
+            <span class="icon icon-scan"></span> {{ 'Scan Now'|t }}
+          </button>
+          <button type="button" id="email-report-btn" class="button button--small">
+            <span class="icon icon-email"></span> {{ 'Email Report'|t }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-table">
+    <h2>{{ 'Detailed Statistics'|t }}</h2>
+    <div class="table-responsive">
+      <table class="responsive-enabled">
+        <thead>
+        <tr>
+          <th>{{ 'Page'|t }}</th>
+          <th>{{ 'Total Issues'|t }}</th>
+          <th>{{ 'Critical'|t }}</th>
+          <th>{{ 'Serious'|t }}</th>
+          <th>{{ 'Moderate'|t }}</th>
+          <th>{{ 'Last Scanned'|t }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td><a href="#">/home</a></td>
+          <td>12</td>
+          <td>2</td>
+          <td>5</td>
+          <td>5</td>
+          <td>2 hours ago</td>
+        </tr>
+        <tr>
+          <td><a href="#">/about</a></td>
+          <td>8</td>
+          <td>1</td>
+          <td>3</td>
+          <td>4</td>
+          <td>5 hours ago</td>
+        </tr>
+        <tr>
+          <td><a href="#">/contact</a></td>
+          <td>5</td>
+          <td>0</td>
+          <td>2</td>
+          <td>3</td>
+          <td>1 day ago</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# Add a loading overlay that will be shown while data is being fetched #}
+<div class="stats-loading" id="stats-loading">
+  <div class="stats-loading__content">
+    <div class="stats-loading__spinner"></div>
+    <div class="stats-loading__text">{{ 'Loading statistics...'|t }}</div>
+  </div>
+</div>
+
+{# This element is now just a marker for JavaScript and no longer holds data. #}
+<div id="chart-data" style="display: none;"></div>

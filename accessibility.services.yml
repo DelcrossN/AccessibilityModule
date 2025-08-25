@@ -1,0 +1,15 @@
+services:
+  accessibility.api_client:
+    class: Drupal\accessibility\Service\AccessibilityApiClient
+    arguments:
+      - '@http_client'
+      - '@cache.default'
+      - '@config.factory'
+      
+  accessibility.llm_service:
+    class: Drupal\accessibility\Service\LlmAnalysisService
+    arguments:
+      - '@http_client'
+      - '@cache.default'
+      - '@config.factory'
+      - '@logger.factory'

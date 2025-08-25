@@ -1,0 +1,142 @@
+.accessibility-dashboard {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dashboard-title {
+  margin: 0 0 0.5rem;
+  color: #232629;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.dashboard-intro {
+  margin: 0;
+  color: #4d4d4d;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-card__icon {
+  margin-bottom: 1rem;
+  color: #3f51b5;
+  font-size: 2rem;
+}
+
+.action-card__title {
+  margin: 0 0 0.75rem;
+  color: #232629;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.action-card__description {
+  flex-grow: 1;
+  margin: 0 0 1.25rem;
+  color: #4d4d4d;
+  line-height: 1.5;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #3f51b5;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background: #303f9f;
+  color: white;
+}
+
+.button--primary {
+  background: #3f51b5;
+}
+
+.button--action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #4caf50;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.button--action:hover {
+  background: #43a047;
+}
+
+.dashboard-quick-actions {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+/* Debug styles */
+.dashboard-debug {
+  margin: 0 0 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.dashboard-debug summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.debug-content {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.debug-content ul {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+}
+
+.debug-content li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}

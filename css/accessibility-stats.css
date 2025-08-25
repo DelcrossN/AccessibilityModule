@@ -1,0 +1,319 @@
+/* --- Design System Variables --- */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-muted: #555;
+  --border-color-soft: #f0f0f0;
+  --border-color-medium: #e0e0e0;
+  --border-color-hard: #ddd;
+  --border-radius-medium: 8px;
+  --border-radius-small: 4px;
+  --background-card: #fff;
+  --background-page: #f9f9f9;
+  --spacing-xs: 0.25rem;
+  --spacing-s: 0.5rem;
+  --spacing-m: 1rem;
+  --spacing-l: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem; /* Added for extra spacing */
+
+  /* Severity Colors */
+  --color-critical: #e53935;
+  --color-critical-bg: #ffebee;
+  --color-serious: #fb8c00;
+  --color-serious-bg: #fff3e0;
+  --color-moderate: #fbc02d;
+  --color-moderate-text: #f9a825;
+  --color-moderate-bg: #fffde7;
+}
+
+/* --- Base Layout & Components --- */
+.accessibility-stats {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+.stats-header {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-m);
+  border-bottom: 1px solid var(--border-color-hard);
+}
+
+.stats-header h1 {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-s);
+}
+
+.stats-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.stats-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+}
+
+.stats-filters {
+  display: flex;
+  gap: var(--spacing-m);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-item__label {
+  font-size: 0.875rem;
+  font-weight: bold;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-muted);
+}
+
+/* --- Stats Grid & Cards --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-l);
+  margin-bottom: var(--spacing-xl);
+}
+
+.stats-card {
+  background-color: var(--background-card);
+  border: 1px solid var(--border-color-medium);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-l);
+  display: flex;
+  align-items: center;
+}
+
+.stats-card__icon {
+  font-size: 2rem;
+  margin-right: var(--spacing-m);
+  color: #999;
+}
+
+.stats-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 var(--spacing-xs);
+  color: #444;
+}
+
+.stats-card__value {
+  font-size: 2.25rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* --- Chart & Sidebar --- */
+.chart-container {
+  display: flex;
+  gap: var(--spacing-xl);
+  /* FIX: Increased bottom margin to ensure separation from the section below. */
+  margin-bottom: var(--spacing-xxl);
+  flex-wrap: wrap;
+}
+
+/* FIX: Use CSS Grid to partition space between the header and the canvas, preventing overflow. */
+.chart-wrapper {
+  flex: 3;
+  min-width: 300px;
+  height: 450px; /* Define a total height for the component */
+  display: grid;
+  grid-template-rows: auto 1fr; /* Header gets content height, canvas gets the rest. */
+  gap: var(--spacing-m); /* Space between header and canvas */
+}
+
+/* NEW: This rule ensures the canvas correctly occupies its grid cell. */
+.chart-wrapper > canvas {
+  position: relative;
+  min-height: 0; /* Prevents the canvas from overflowing its container in a flex/grid context. */
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* FIX: Margin is now handled by the parent grid's `gap` property. */
+  margin-bottom: 0;
+}
+
+.chart-title {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.chart-sidebar {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-l);
+}
+
+.chart-sidebar__section {
+  background-color: var(--background-card);
+  border: 1px solid var(--border-color-medium);
+  border-radius: var(--border-radius-medium);
+  padding: var(--spacing-l);
+}
+
+.chart-sidebar__title {
+  font-size: 1.2rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: var(--spacing-s);
+  margin-top: 0;
+  margin-bottom: var(--spacing-m);
+}
+
+.issue-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.issue-list__item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-s) 0;
+  border-bottom: 1px solid var(--border-color-soft);
+}
+
+.issue-list__item:last-child {
+  border-bottom: none;
+}
+
+.issue-list__name {
+  color: var(--text-muted);
+}
+
+.issue-list__count {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+/* --- Loading Spinner --- */
+.stats-loading {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-loading.is-active {
+  display: flex;
+}
+
+.stats-loading__spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Scan Result Styling for Top Issues Card --- */
+.scan-results-active.issue-list {
+  gap: var(--spacing-s);
+}
+
+.scan-results-active .issue-list__item {
+  font-size: 0.9em;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color-hard);
+  border-left-width: 5px;
+  border-radius: var(--border-radius-small);
+  background-color: #fcfcfc;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.scan-results-active .issue-list__item::before {
+  font-family: 'Drupal-Icons';
+  font-weight: 900;
+  margin-right: 0.75rem;
+  font-size: 1.2em;
+  flex-shrink: 0;
+}
+
+/* Critical Severity: Red */
+.scan-results-active .issue-list__item--critical {
+  border-left-color: var(--color-critical);
+  background-color: var(--color-critical-bg);
+}
+.scan-results-active .issue-list__item--critical::before {
+  content: '\e034'; /* Drupal icon for 'error' */
+  color: var(--color-critical);
+}
+
+/* Serious Severity: Orange */
+.scan-results-active .issue-list__item--serious {
+  border-left-color: var(--color-serious);
+  background-color: var(--color-serious-bg);
+}
+.scan-results-active .issue-list__item--serious::before {
+  content: '\e033'; /* Drupal icon for 'warning' */
+  color: var(--color-serious);
+}
+
+/* Moderate Severity: Yellow */
+.scan-results-active .issue-list__item--moderate {
+  border-left-color: var(--color-moderate);
+  background-color: var(--color-moderate-bg);
+}
+.scan-results-active .issue-list__item--moderate::before {
+  content: '\e033'; /* Drupal icon for 'warning' */
+  color: var(--color-moderate-text);
+}
+
+.scan-results-active .issue-list__item .issue-list__name {
+  flex-grow: 1;
+  color: var(--text-primary);
+}
+
+.scan-results-active .issue-list__item .issue-list__count {
+  margin-left: var(--spacing-m);
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.1rem var(--spacing-s);
+  border-radius: 10px;
+  font-size: 0.9em;
+  color: #444;
+}

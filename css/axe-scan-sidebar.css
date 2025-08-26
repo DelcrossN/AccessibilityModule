@@ -75,7 +75,7 @@
   background: white;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
   transform: translateX(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   border-radius: 16px 0 0 16px;
@@ -84,6 +84,49 @@
 
 .popup-overlay.active .popup-content {
   transform: translateX(0);
+}
+
+/* Minimized state with smooth animation */
+.popup-content.minimized {
+  height: 60px !important;
+  min-height: 60px !important;
+  transition: transform 0.3s ease, height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.popup-content.minimized .popup-body {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+}
+
+.popup-content:not(.minimized) .popup-body {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+  pointer-events: all;
+  height: auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.popup-content.minimized .popup-header {
+  border-radius: 16px 0 0 16px;
+}
+
+/* Remove overlay effect when minimized */
+.popup-overlay.minimized {
+  background: transparent;
+  pointer-events: none;
+}
+
+.popup-overlay.minimized .popup-content {
+  pointer-events: all;
 }
 
 /* Popup header */
@@ -106,6 +149,14 @@
   color: white;
 }
 
+/* Popup controls container */
+.popup-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#minimize-popup,
 #close-popup {
   background: none;
   border: none;
@@ -123,8 +174,16 @@
   font-weight: normal;
 }
 
+#minimize-popup:hover,
 #close-popup:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+#minimize-popup {
+  font-size: 1rem;
+  font-weight: normal;
+  line-height: 1;
+  color: white;
 }
 
 /* Popup body */
@@ -194,11 +253,36 @@
 }
 
 .violation-icon {
-  font-size: 1rem;
+  font-size: 0.875rem;
   flex-shrink: 0;
   width: 1.25rem;
+  height: 1.25rem;
   text-align: center;
   margin-top: 0.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: white;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Severity-specific icon backgrounds */
+.violation-item.critical .violation-icon {
+  background-color: #e53e3e;
+}
+
+.violation-item.serious .violation-icon {
+  background-color: #dd6b20;
+}
+
+.violation-item.moderate .violation-icon {
+  background-color: #d69e2e;
+}
+
+.violation-item.minor .violation-icon {
+  background-color: #38a169;
 }
 
 .violation-content {
@@ -479,6 +563,7 @@
 
 /* Focus styles for accessibility */
 .axe-scan-button:focus,
+#minimize-popup:focus,
 #close-popup:focus {
   outline: 2px solid #2c5282;
   outline-offset: 2px;

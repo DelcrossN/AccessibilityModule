@@ -91,9 +91,14 @@
         <div class="popup-content">
           <div class="popup-header">
             <h3>Accessibility Scan Results</h3>
-            <button id="close-popup" type="button" aria-label="Close accessibility results">
-              ×
-            </button>
+            <div class="popup-controls">
+              <button id="minimize-popup" type="button" aria-label="Minimize accessibility results">
+                ↙
+              </button>
+              <button id="close-popup" type="button" aria-label="Close accessibility results">
+                ×
+              </button>
+            </div>
           </div>
           <div class="popup-body">
             <div id="violations-list">
@@ -110,9 +115,14 @@
     // Bind close events using event delegation
     const popup = document.getElementById('violations-popup');
     const closeButton = document.getElementById('close-popup');
+    const minimizeButton = document.getElementById('minimize-popup');
     
     if (closeButton) {
       closeButton.addEventListener('click', hidePopup);
+    }
+    
+    if (minimizeButton) {
+      minimizeButton.addEventListener('click', toggleMinimize);
     }
     
     if (popup) {
@@ -131,13 +141,56 @@
     });
   }
 
+  function toggleMinimize() {
+    const popup = document.getElementById('violations-popup');
+    const popupContent = popup ? popup.querySelector('.popup-content') : null;
+    const minimizeButton = document.getElementById('minimize-popup');
+    
+    if (!popup || !popupContent || !minimizeButton) return;
+    
+    const isMinimized = popupContent.classList.contains('minimized');
+    
+    if (isMinimized) {
+      // Maximize
+      popupContent.classList.remove('minimized');
+      popup.classList.remove('minimized');
+      minimizeButton.innerHTML = '↙';
+      minimizeButton.setAttribute('aria-label', 'Minimize accessibility results');
+      minimizeButton.setAttribute('title', 'Minimize');
+      // Restore overlay effect and prevent body scroll
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Minimize
+      popupContent.classList.add('minimized');
+      popup.classList.add('minimized');
+      minimizeButton.innerHTML = '↗';
+      minimizeButton.setAttribute('aria-label', 'Maximize accessibility results');
+      minimizeButton.setAttribute('title', 'Maximize');
+      // Remove overlay effect and allow body scroll
+      document.body.style.overflow = '';
+    }
+  }
+
   function hidePopup() {
     const popup = document.getElementById('violations-popup');
+    const popupContent = popup ? popup.querySelector('.popup-content') : null;
     const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
 
     if (popup) {
-      popup.classList.remove('active');
+      popup.classList.remove('active', 'minimized');
       document.body.style.overflow = '';
+    }
+    
+    // Reset minimize state when closing
+    if (popupContent) {
+      popupContent.classList.remove('minimized');
+    }
+    
+    const minimizeButton = document.getElementById('minimize-popup');
+    if (minimizeButton) {
+      minimizeButton.innerHTML = '⇙';
+      minimizeButton.setAttribute('aria-label', 'Minimize accessibility results');
+      minimizeButton.setAttribute('title', 'Minimize');
     }
 
     // Force reset button state and cancel any ongoing scan
@@ -156,7 +209,7 @@
     } else {
       button.classList.remove('scanning');
       button.disabled = false;
-      button.innerHTML = '<span>⚡</span> Run Axe Scan';
+      button.innerHTML = 'Run Axe Scan';
     }
   }
 
@@ -323,14 +376,18 @@
     console.log('Displaying results:', results.violations.length + ' violations found');
 
     if (!results.violations || results.violations.length === 0) {
-      violationsList.innerHTML = '<div class="no-violations"><p>✅ No accessibility violations found!</p></div>';
+      violationsList.innerHTML = '<div class="no-violations"><p>No accessibility violations found!</p></div>';
       return;
     }
 
     // Sort violations by impact (critical -> serious -> moderate -> minor)
     const impactOrder = { critical: 0, serious: 1, moderate: 2, minor: 3 };
     const sortedViolations = results.violations.sort((a, b) => {
-      return (impactOrder[a.impact] || 999) - (impactOrder[b.impact] || 999);
+      const aImpact = a.impact || 'minor';
+      const bImpact = b.impact || 'minor';
+      const aOrder = impactOrder[aImpact] !== undefined ? impactOrder[aImpact] : 999;
+      const bOrder = impactOrder[bImpact] !== undefined ? impactOrder[bImpact] : 999;
+      return aOrder - bOrder;
     });
 
     let html = '<div class="violations-summary">Found ' + results.violations.length + ' violations:</div>';
@@ -402,8 +459,8 @@
       // Show notification
       showHighlightNotification(highlightedCount);
 
-      // Auto-clear highlights after 10 seconds
-      setTimeout(clearHighlights, 10000);
+      // Highlights will persist until manually cleared
+      // No auto-clear timeout
     } else {
       console.warn('No elements found to highlight');
     }
@@ -479,7 +536,7 @@
     const notification = document.createElement('div');
     notification.className = 'highlight-notification';
     notification.innerHTML = `
-      <p>✨ Highlighted ${count} violation instance${count > 1 ? 's' : ''} on the page</p>
+      <p>Highlighted ${count} violation instance${count > 1 ? 's' : ''} on the page</p>
       <button onclick="clearHighlights()" class="clear-highlights-btn">Clear Highlights</button>
     `;
     notification.style.cssText = `

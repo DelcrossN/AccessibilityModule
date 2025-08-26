@@ -30,7 +30,7 @@ class AxeScanBlock extends BlockBase {
       ],
       'button' => [
         '#type' => 'button',
-        '#value' => $this->t('⚡ Run Axe Scan'),
+        '#value' => $this->t('Run Axe Scan'),
         '#attributes' => [
           'class' => [
             'button',

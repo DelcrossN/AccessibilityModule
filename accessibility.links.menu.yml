@@ -19,6 +19,13 @@ accessibility.llm_settings:
   parent: accessibility.admin
   weight: 1
 
+accessibility.test_violations:
+  title: 'Test Violations Page'
+  description: 'View a test page with intentional accessibility violations'
+  route_name: accessibility.test_violations
+  parent: accessibility.admin
+  weight: 6
+
 accessibility.admin:
   title: 'Accessibility'
   description: 'Accessibility tools and settings'

@@ -8,6 +8,7 @@
  * - config_url: URL to the configuration page.
  * - stats_url: URL to the statistics page.
  * - report_url: URL to the accessibility report.
+ * - test_violations_url: URL to the test violations page.
  * - debug: (optional) Boolean to enable debug information.
  */
 #}
@@ -74,6 +75,21 @@
         </p>
         <a href="{{ report_url }}" class="button button--primary">
           {{ 'View Report'|t }}
+        </a>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-card__icon">
+        <span class="dashicons dashicons-warning"></span>
+      </div>
+      <div class="action-card__content">
+        <h3 class="action-card__title">{{ 'Test Violations Page'|t }}</h3>
+        <p class="action-card__description">
+          {{ 'View a test page with intentional accessibility violations for scanner testing.'|t }}
+        </p>
+        <a href="{{ test_violations_url }}" class="button button--secondary">
+          {{ 'View Test Page'|t }}
         </a>
       </div>
     </div>

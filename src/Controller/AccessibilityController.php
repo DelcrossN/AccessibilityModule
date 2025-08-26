@@ -79,6 +79,7 @@ class AccessibilityController extends ControllerBase {
       '#config_url' => Url::fromRoute('accessibility.settings')->toString(),
       '#stats_url' => Url::fromRoute('accessibility.stats')->toString(),
       '#report_url' => Url::fromRoute('accessibility.report', ['path' => '/'])->toString(),
+      '#test_violations_url' => Url::fromRoute('accessibility.test_violations')->toString(),
       '#attached' => [
         'library' => [
           'accessibility/axe_scanner',
@@ -233,6 +234,28 @@ class AccessibilityController extends ControllerBase {
       $this->getLogger('accessibility')->error('Unable to retrieve page for generateReport: @error', ['@error' => $e->getMessage()]);
       return [];
     }
+  }
+
+  /**
+   * Displays a test page with various accessibility violations.
+   *
+   * This page is intentionally riddled with accessibility issues
+   * for testing purposes with axe-core and other scanning tools.
+   *
+   * @return array
+   *   A render array for the test violations page.
+   */
+  public function testViolations() {
+    return [
+      '#theme' => 'accessibility_test_violations',
+      '#attached' => [
+        'library' => [
+          'accessibility/axe_scanner',
+          'accessibility/test_violations_styles',
+        ],
+      ],
+      '#cache' => ['max-age' => 0],
+    ];
   }
 
 }

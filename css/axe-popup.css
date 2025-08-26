@@ -1,0 +1,354 @@
+/* Popup overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.popup-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Popup content */
+.popup-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30%;
+  min-width: 350px;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+}
+
+.popup-overlay.active .popup-content {
+  transform: translateX(0);
+}
+
+/* Popup header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #0073aa;
+  color: white;
+  flex-shrink: 0;
+  border-radius: 8px 0 0 0;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+#close-axe-popup {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#close-axe-popup:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Popup body */
+.popup-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* Violations list */
+#axe-violations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.violations-summary {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+/* Violation items */
+.violation-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid;
+  background: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.violation-item:hover {
+  background: #f0f0f0;
+  transform: translateX(2px);
+}
+
+/* Severity colors */
+.violation-item.critical {
+  border-left-color: #d63638;
+  background: #fef7f7;
+}
+
+.violation-item.serious {
+  border-left-color: #f56e28;
+  background: #fff8f3;
+}
+
+.violation-item.moderate {
+  border-left-color: #ffb900;
+  background: #fffbf0;
+}
+
+.violation-item.minor {
+  border-left-color: #46b450;
+  background: #f7fdf7;
+}
+
+.violation-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.violation-content {
+  flex: 1;
+}
+
+.violation-title {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
+.violation-description {
+  font-size: 0.9rem;
+  color: #4a4a4a;
+  line-height: 1.4;
+}
+
+/* Clickable instance count button */
+.violation-count {
+  background: #666;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.violation-count:hover {
+  background: #555;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.violation-count:active {
+  transform: translateY(0);
+}
+
+.violation-count:focus {
+  outline: 2px solid #0073aa;
+  outline-offset: 2px;
+}
+
+/* Severity-specific count buttons */
+.violation-item.critical .violation-count {
+  background: #d63638;
+}
+
+.violation-item.critical .violation-count:hover {
+  background: #b32629;
+}
+
+.violation-item.serious .violation-count {
+  background: #f56e28;
+}
+
+.violation-item.serious .violation-count:hover {
+  background: #e55a1c;
+}
+
+.violation-item.moderate .violation-count {
+  background: #ffb900;
+  color: black;
+}
+
+.violation-item.moderate .violation-count:hover {
+  background: #e6a600;
+}
+
+.violation-item.minor .violation-count {
+  background: #46b450;
+}
+
+.violation-item.minor .violation-count:hover {
+  background: #3a9940;
+}
+
+/* No violations message */
+.no-violations {
+  text-align: center;
+  padding: 2rem;
+  color: #46b450;
+  font-size: 1.1rem;
+}
+
+/* Scanning message */
+.scanning-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.scanning-message p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+/* New circular spinner */
+.scanning-message .scan-icon {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  border: 3px solid transparent;
+  border-top: 3px solid currentColor;
+  border-radius: 50%;
+  animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error message */
+.scan-error {
+  text-align: center;
+  padding: 2rem;
+  color: #d63638;
+  background: #fef7f7;
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
+}
+
+/* Highlight animations */
+@keyframes highlightPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Notification styles */
+.highlight-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0073aa;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.highlight-notification p {
+  margin: 0;
+  flex: 1;
+}
+
+.clear-highlights-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.clear-highlights-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Make sure highlights work on all screen sizes */
+.accessibility-highlight {
+  min-width: 10px;
+  min-height: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 100%;
+    min-width: 100%;
+    border-radius: 0;
+  }
+
+  .popup-header {
+    border-radius: 0;
+  }
+}
+
+/* Focus styles for accessibility */
+#close-axe-popup:focus {
+  outline: 2px solid #005a87;
+  outline-offset: 2px;
+}

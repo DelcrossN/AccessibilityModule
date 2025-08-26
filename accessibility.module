@@ -26,6 +26,7 @@ function accessibility_theme($existing, $type, $theme, $path) {
         'config_url' => NULL,
         'stats_url' => NULL,
         'report_url' => NULL,
+        'test_violations_url' => NULL,
         'debug' => FALSE,
       ],
     ],
@@ -50,6 +51,10 @@ function accessibility_theme($existing, $type, $theme, $path) {
         'timestamp' => NULL,
       ],
       'template' => 'accessibility-analysis',
+    ],
+    'accessibility_test_violations' => [
+      'template' => 'accessibility-test-violations',
+      'variables' => [],
     ],
   ];
 }
@@ -170,6 +175,42 @@ function accessibility_library_info_build() {
     ],
   ];
 
+  $libraries['test_violations_axe'] = [
+    'version' => '1.x',
+    'js' => [
+      'js/test-violations.js' => [],
+    ],
+    'css' => [
+      'theme' => [
+        'css/test-violations.css' => [],
+      ],
+    ],
+    'dependencies' => [
+      'core/jquery',
+      'core/drupal',
+      'core/once',
+    ],
+  ];
+
+  // Library for the Axe Scan Sidebar Block.
+  $libraries['axe_scan_sidebar'] = [
+    'version' => '1.x',
+    'js' => [
+      'js/axe-scan-sidebar.js' => [],
+    ],
+    'css' => [
+      'theme' => [
+        'css/axe-scan-sidebar.css' => [],
+      ],
+    ],
+    'dependencies' => [
+      'core/jquery',
+      'core/drupal',
+      'core/once',
+      'core/drupalSettings',
+    ],
+  ];
+
   return $libraries;
 }
 
@@ -212,6 +253,10 @@ function accessibility_page_attachments(array &$attachments) {
     case 'accessibility.llm_test':
       $attachments['#attached']['library'][] = 'accessibility/mistral_llm';
       break;
+
+    case 'accessibility.test_violations':
+      $attachments['#attached']['library'][] = 'accessibility/test_violations_styles';
+      break;
   }
 }
 
@@ -229,5 +274,40 @@ function accessibility_help($route_name, RouteMatchInterface $route_match) {
     default:
       // Return NULL for other routes to let other modules provide help.
       return NULL;
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function accessibility_preprocess_page(&$variables) {
+  // Check if this is the front page.
+  $is_front = \Drupal::service('path.matcher')->isFrontPage();
+  
+  if ($is_front) {
+    // Add a button/link to the violations page.
+    $violations_link = [
+      '#type' => 'link',
+      '#title' => t('View Accessibility Violations'),
+      '#url' => \Drupal\Core\Url::fromUri('internal:/accessibility/test-violations'),
+      '#attributes' => [
+        'class' => ['button', 'button--primary', 'accessibility-violations-button'],
+        'id' => 'accessibility-violations-link',
+      ],
+      '#prefix' => '<div class="accessibility-violations-wrapper" style="margin-top: 2rem; text-align: center;">',
+      '#suffix' => '</div>',
+      '#attached' => [
+        'library' => [
+          'accessibility/dashboard_styles',
+        ],
+      ],
+    ];
+    
+    // Add the button to the page content.
+    if (isset($variables['page']['content'])) {
+      $variables['page']['content']['accessibility_violations_button'] = $violations_link;
+      // Set a high weight to ensure it appears at the bottom.
+      $variables['page']['content']['accessibility_violations_button']['#weight'] = 1000;
+    }
   }
 }

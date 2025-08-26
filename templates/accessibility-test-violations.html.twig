@@ -1,0 +1,760 @@
+{#
+/**
+ * @file
+ * Template for the accessibility test violations page.
+ *
+ * This page contains intentional accessibility violations for testing purposes.
+ */
+#}
+
+<div class="test-violations-page" data-testid="violations-page">
+
+  {# Add sidebar region for blocks #}
+  {% if page.sidebar_first %}
+    <div class="layout-sidebar-first">
+      {{ page.sidebar_first }}
+    </div>
+  {% endif %}
+
+  {# Main content wrapper #}
+  <div class="main-content">
+
+    <!-- 1. Missing Alt Text Violations -->
+    <section class="violation-section" id="missing-alt-text">
+      <h2 class="section-title">Images Missing Alt Text</h2>
+      <div class="violation-examples">
+        <p>These images are missing alternative text descriptions:</p>
+        <div class="image-grid">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Crect width='200' height='100' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='14'%3EImportant Chart%3C/text%3E%3C/svg%3E" width="200" height="100">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='80'%3E%3Crect width='150' height='80' fill='%234ecdc4'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='12'%3EGraph Data%3C/text%3E%3C/svg%3E" width="150" height="80">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='90'%3E%3Crect width='180' height='90' fill='%239b59b6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='12'%3EUser Photo%3C/text%3E%3C/svg%3E" width="180" height="90">
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Color Contrast Issues -->
+    <section class="violation-section" id="color-contrast">
+      <h2 class="section-title">Low Color Contrast Violations</h2>
+      <div class="violation-examples">
+        <div class="contrast-examples">
+          <p class="low-contrast-text">This text has very low contrast (2.1:1 ratio) making it difficult to read.</p>
+          <p class="medium-contrast-text">This text has medium contrast (3.2:1 ratio) but still fails AA standards.</p>
+          <button class="low-contrast-button">Hard to Read Button</button>
+          <a href="#" class="barely-visible-link">This link is barely visible</a>
+          <span class="white-on-yellow">White text on yellow background</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Form Accessibility Issues -->
+    <section class="violation-section" id="form-issues">
+      <h2 class="section-title">Form Accessibility Violations</h2>
+      <div class="violation-examples">
+        <form class="problematic-form" novalidate>
+          <div class="form-group">
+            <!-- Input without label -->
+            <input type="text" placeholder="Enter your full name" required>
+          </div>
+
+          <div class="form-group">
+            <!-- Email input without proper label -->
+            <input type="email" placeholder="Enter email address" required>
+          </div>
+
+          <div class="form-group">
+            <!-- Password without label or requirements -->
+            <input type="password" placeholder="Password">
+          </div>
+
+          <div class="form-group">
+            <!-- Radio buttons without fieldset/legend -->
+            <p>Select your preference:</p>
+            <input type="radio" name="preference" value="option1" id="radio1">
+            <label for="radio1">Option 1</label>
+            <input type="radio" name="preference" value="option2" id="radio2">
+            <label for="radio2">Option 2</label>
+          </div>
+
+          <div class="form-group">
+            <!-- Checkbox without proper labeling -->
+            <input type="checkbox" id="terms">
+            <span onclick="document.getElementById('terms').checked = !document.getElementById('terms').checked">
+              I agree to the terms and conditions
+            </span>
+          </div>
+
+          <div class="form-group">
+            <!-- Select without label -->
+            <select required>
+              <option value="">Choose your country</option>
+              <option value="us">United States</option>
+              <option value="ca">Canada</option>
+              <option value="uk">United Kingdom</option>
+            </select>
+          </div>
+
+          <button type="submit" class="submit-button">Submit Form</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 4. Heading Structure Issues -->
+    <section class="violation-section" id="heading-structure">
+      <h2 class="section-title">Improper Heading Structure</h2>
+      <div class="violation-examples">
+        <h4>This H4 Skips H3 (Violation)</h4>
+        <p>Content under the improperly structured heading.</p>
+        <h6>This H6 After H4 (Another Violation)</h6>
+        <p>More content with poor heading hierarchy.</p>
+        <h1>Second H1 on Page (Should Only Have One)</h1>
+        <p>Multiple H1s confuse screen readers and SEO.</p>
+        <h2>Back to H2</h2>
+        <h5>Then Jump to H5 (Skipping H3 and H4)</h5>
+      </div>
+    </section>
+
+    <!-- 5. Keyboard Navigation Issues -->
+    <section class="violation-section focus-issues-section" id="keyboard-issues">
+      <h2 class="section-title">Keyboard Navigation Violations</h2>
+      <div class="violation-examples">
+        <div class="interactive-divs">
+          <div class="fake-button" onclick="handleClick()">
+            This div acts like a button but cannot be focused with Tab key
+          </div>
+
+          <div class="fake-link" onclick="window.location='#'">
+            This div acts like a link but is not keyboard accessible
+          </div>
+        </div>
+
+        <div class="focus-indicator-issues">
+          <button class="no-focus-button">Button with removed focus indicator</button>
+          <a href="#" class="no-focus-link">Link with no focus styles</a>
+          <input type="text" class="no-focus-input" placeholder="Input with no focus outline">
+        </div>
+
+        <div class="keyboard-trap-demo">
+          <p>Keyboard trap demonstration (Tab gets stuck here):</p>
+          <input type="text" class="trap-input-1" placeholder="Can tab in but not out easily">
+          <select class="trap-select">
+            <option>Trapped select element</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+          </select>
+          <input type="text" class="trap-input-2" placeholder="Another trapped input">
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ARIA Usage Violations -->
+    <section class="violation-section" id="aria-issues">
+      <h2 class="section-title">ARIA Implementation Violations</h2>
+      <div class="violation-examples">
+        <div class="aria-violations">
+          <!-- ARIA button without keyboard support -->
+          <div role="button" class="fake-aria-button">ARIA button without keyboard support</div>
+
+          <!-- Empty aria-label -->
+          <div aria-label="" class="empty-aria-label">Element with empty aria-label</div>
+
+          <!-- Improper tab implementation -->
+          <div class="fake-tabs">
+            <div role="tab" aria-selected="false" tabindex="0">Tab 1</div>
+            <div role="tab" aria-selected="false" tabindex="-1">Tab 2</div>
+            <div role="tab" aria-selected="false" tabindex="-1">Tab 3</div>
+            <!-- Missing tabpanel and proper tab structure -->
+          </div>
+
+          <!-- Invalid ARIA attributes -->
+          <div aria-required="true">Div with aria-required (invalid for div)</div>
+          <span role="textbox">Span pretending to be textbox</span>
+
+          <!-- Conflicting roles -->
+          <button role="link">Button with conflicting link role</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Custom Components Without Accessibility -->
+    <section class="violation-section" id="custom-components">
+      <h2 class="section-title">Inaccessible Custom Components</h2>
+      <div class="violation-examples">
+        <div class="custom-dropdown">
+          <div class="dropdown-trigger" onclick="toggleDropdown()">
+            Select an option ▼
+          </div>
+          <div class="dropdown-content" id="dropdown-menu">
+            <div onclick="selectOption('Option 1')">Option 1</div>
+            <div onclick="selectOption('Option 2')">Option 2</div>
+            <div onclick="selectOption('Option 3')">Option 3</div>
+            <div onclick="selectOption('Option 4')">Option 4</div>
+          </div>
+        </div>
+
+        <div class="custom-slider">
+          <div class="slider-track">
+            <div class="slider-thumb" onclick="moveSlider()"></div>
+          </div>
+          <span class="slider-value">50</span>
+        </div>
+
+        <div class="custom-modal-trigger">
+          <button onclick="openModal()">Open Modal</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Table Accessibility Issues -->
+    <section class="violation-section" id="table-issues">
+      <h2 class="section-title">Data Table Violations</h2>
+      <div class="violation-examples">
+        <div class="table-container">
+          <!-- Table without proper headers -->
+          <table class="problematic-table">
+            <tr>
+              <td>Name</td>
+              <td>Age</td>
+              <td>Department</td>
+              <td>Salary</td>
+            </tr>
+            <tr>
+              <td>John Smith</td>
+              <td>30</td>
+              <td>Engineering</td>
+              <td>$75,000</td>
+            </tr>
+            <tr>
+              <td>Jane Doe</td>
+              <td>28</td>
+              <td>Marketing</td>
+              <td>$65,000</td>
+            </tr>
+            <tr>
+              <td>Bob Johnson</td>
+              <td>35</td>
+              <td>Sales</td>
+              <td>$70,000</td>
+            </tr>
+          </table>
+
+          <!-- Complex table without proper headers -->
+          <table class="complex-problematic-table">
+            <tr>
+              <td rowspan="2">Quarter</td>
+              <td colspan="2">Sales</td>
+              <td colspan="2">Expenses</td>
+            </tr>
+            <tr>
+              <td>Actual</td>
+              <td>Projected</td>
+              <td>Actual</td>
+              <td>Projected</td>
+            </tr>
+            <tr>
+              <td>Q1</td>
+              <td>$100K</td>
+              <td>$110K</td>
+              <td>$50K</td>
+              <td>$45K</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. List Structure Issues -->
+    <section class="violation-section" id="list-issues">
+      <h2 class="section-title">List Structure Violations</h2>
+      <div class="violation-examples">
+        <div class="fake-lists">
+          <p><strong>Fake bullet list (should use ul/li):</strong></p>
+          <div class="fake-list-item">• First item in fake list</div>
+          <div class="fake-list-item">• Second item in fake list</div>
+          <div class="fake-list-item">• Third item in fake list</div>
+
+          <p><strong>Fake numbered list (should use ol/li):</strong></p>
+          <div class="fake-numbered-item">1. First numbered item</div>
+          <div class="fake-numbered-item">2. Second numbered item</div>
+          <div class="fake-numbered-item">3. Third numbered item</div>
+
+          <p><strong>Navigation as fake list:</strong></p>
+          <div class="fake-nav">
+            <span class="fake-nav-item">Home |</span>
+            <span class="fake-nav-item">About |</span>
+            <span class="fake-nav-item">Services |</span>
+            <span class="fake-nav-item">Contact</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Link Accessibility Issues -->
+    <section class="violation-section" id="link-issues">
+      <h2 class="section-title">Link Accessibility Violations</h2>
+      <div class="violation-examples">
+        <div class="problematic-links">
+          <p>Links with vague or generic text:</p>
+          <a href="#">Click here</a> for more information about our services.<br>
+          <a href="#">Read more</a> about our company history.<br>
+          <a href="#">Learn more</a> about accessibility guidelines.<br>
+          <a href="#">More info</a> can be found in our documentation.<br>
+
+          <p>Links without clear purpose:</p>
+          <a href="https://example.com" target="_blank">External link</a> (opens in new window without warning)<br>
+          <a href="mailto:test@example.com">Contact</a> (email link without indication)<br>
+          <a href="tel:+1234567890">Call</a> (phone link without indication)<br>
+
+          <p>Adjacent links with same text:</p>
+          <a href="/products">Products</a> | <a href="/products/featured">Products</a><br>
+          <a href="/services">Services</a> | <a href="/services/premium">Services</a><br>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Empty and Meaningless Elements -->
+    <section class="violation-section" id="empty-elements">
+      <h2 class="section-title">Empty and Meaningless Element Violations</h2>
+      <div class="violation-examples">
+        <div class="empty-elements">
+          <button></button> <!-- Empty button -->
+          <a href="#"></a> <!-- Empty link -->
+          <button> </button> <!-- Button with only whitespace -->
+          <div role="button" aria-label=""></div> <!-- Empty aria-label -->
+
+          <iframe src="about:blank" width="300" height="200"></iframe> <!-- iframe without title -->
+
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="1" height="1"> <!-- Decorative image without alt="" -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Motion and Animation Issues -->
+    <section class="violation-section" id="motion-issues">
+      <h2 class="section-title">Motion Accessibility Violations</h2>
+      <div class="violation-examples">
+        <div class="motion-violations">
+          <div class="flashing-element">
+            ⚠️ This element flashes rapidly and could trigger seizures
+          </div>
+
+          <div class="auto-moving-element">
+            📦 This content moves automatically without user control
+          </div>
+
+          <div class="parallax-element">
+            🌟 Parallax effect that may cause vestibular disorders
+          </div>
+
+          <div class="infinite-carousel">
+            <div class="carousel-item active">Slide 1</div>
+            <div class="carousel-item">Slide 2</div>
+            <div class="carousel-item">Slide 3</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Language and Content Issues -->
+    <section class="violation-section" id="language-issues">
+      <h2 class="section-title">Language Attribute Violations</h2>
+      <div class="violation-examples">
+        <div class="language-violations">
+          <p>This paragraph is in English and properly identified.</p>
+          <p>Ce paragraphe est en français mais n'est pas identifié comme tel.</p>
+          <p>Dieser Absatz ist auf Deutsch, aber die Sprache ist nicht angegeben.</p>
+          <p>Este párrafo está en español sin identificación de idioma.</p>
+          <p>Questo paragrafo è in italiano ma manca l'attributo lang.</p>
+
+          <blockquote>
+            "Accessibility is not a feature, it's a fundamental design principle" - quoted text without language identification
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. Text Readability Issues -->
+    <section class="violation-section" id="readability-issues">
+      <h2 class="section-title">Text Readability Violations</h2>
+      <div class="violation-examples">
+        <div class="readability-violations">
+          <p class="poor-spacing">This text has extremely poor line height and letter spacing making it very difficult to read and process especially for users with dyslexia or other reading difficulties.</p>
+
+          <p class="tiny-text">This text is far too small to read comfortably.</p>
+
+          <p class="justified-text">This text is justified which can create uneven spacing between words making it difficult for some users to read especially those with dyslexia or other cognitive processing differences. Justified text can create rivers of white space that interfere with reading flow.</p>
+
+          <p class="all-caps">THIS ENTIRE PARAGRAPH IS WRITTEN IN ALL CAPITAL LETTERS WHICH MAKES IT MUCH HARDER TO READ AND CAN BE PERCEIVED AS SHOUTING BY SCREEN READER USERS.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. Audio/Video Issues -->
+    <section class="violation-section" id="media-issues">
+      <h2 class="section-title">Media Accessibility Violations</h2>
+      <div class="violation-examples">
+        <div class="media-violations">
+          <audio controls>
+            <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsGG2fB8N2QQAgUXrTp66hVFApGn+DyvmEaBC2Ez/LLeCsG" type="audio/wav">
+            Your browser does not support the audio element.
+          </audio>
+          <p><em>Audio without transcript or captions</em></p>
+
+          <video width="320" height="240" controls muted>
+            <source src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAG21kYXQAAAISAADlFwEkAAABAAAAB8AgNOgAAAAHUExQAALCAgIC" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p><em>Video without captions or transcript</em></p>
+        </div>
+      </div>
+    </section>
+
+  </div> {# Close main-content #}
+
+  {# Add second sidebar region if needed #}
+  {% if page.sidebar_second %}
+    <div class="layout-sidebar-second">
+      {{ page.sidebar_second }}
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Inline styles for violation demonstrations -->
+<style>
+  /* Test Violations Page Styles */
+  .test-violations-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  /* Sidebar Styles */
+  .layout-sidebar-first,
+  .layout-sidebar-second {
+    flex: 0 0 250px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  /* Main content area */
+  .main-content {
+    flex: 1;
+    min-width: 0; /* Prevents flex item from overflowing */
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .page-title {
+    margin: 0 0 15px 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .violation-section {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+
+  .section-title {
+    background: #dc3545;
+    color: white;
+    margin: 0;
+    padding: 15px 20px;
+    font-size: 1.25rem;
+  }
+
+  .violation-examples {
+    padding: 20px;
+    background: white;
+  }
+
+  /* Image Grid */
+  .image-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  /* Color Contrast Examples */
+  .low-contrast-text {
+    color: #ccc;
+    background: white;
+  }
+
+  .medium-contrast-text {
+    color: #888;
+    background: white;
+  }
+
+  .low-contrast-button {
+    background: #ffeb3b;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+  }
+
+  .barely-visible-link {
+    color: #ddd;
+    text-decoration: underline;
+  }
+
+  .white-on-yellow {
+    background: #ffeb3b;
+    color: white;
+    padding: 5px 10px;
+  }
+
+  /* Form Issues */
+  .problematic-form {
+    max-width: 600px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* Interactive Divs (Fake Buttons) */
+  .fake-button {
+    background: #007bff;
+    color: white;
+    padding: 10px 20px;
+    margin: 5px;
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .fake-link {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 5px;
+    display: inline-block;
+    margin: 5px;
+  }
+
+  .fake-aria-button {
+    background: #28a745;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-block;
+    margin: 5px;
+  }
+
+  /* Focus Issues */
+  .no-focus-button:focus,
+  .no-focus-link:focus,
+  .no-focus-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Keyboard Trap */
+  .trap-input-1,
+  .trap-input-2,
+  .trap-select {
+    margin: 5px;
+    padding: 8px;
+  }
+
+  /* Custom Dropdown */
+  .custom-dropdown {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+  }
+
+  .dropdown-trigger {
+    background: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+  }
+
+  .dropdown-content div {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+
+  .dropdown-content div:hover {
+    background: #f8f9fa;
+  }
+
+  /* Table Issues */
+  .problematic-table,
+  .complex-problematic-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .problematic-table td,
+  .complex-problematic-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .problematic-table tr:nth-child(even),
+  .complex-problematic-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  /* List Issues */
+  .fake-list-item,
+  .fake-numbered-item {
+    margin: 5px 0;
+    padding-left: 20px;
+  }
+
+  .fake-nav-item {
+    margin: 0 5px;
+  }
+
+  /* Motion Issues */
+  .flashing-element {
+    animation: flash 0.5s infinite;
+    background: #ff6b6b;
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  @keyframes flash {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.1; }
+  }
+
+  .auto-moving-element {
+    animation: slide 3s infinite linear;
+    background: #4ecdc4;
+    color: white;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  @keyframes slide {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(100px); }
+    100% { transform: translateX(0); }
+  }
+
+  .parallax-element {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    color: white;
+    padding: 20px;
+    margin: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    animation: parallax 4s infinite;
+  }
+
+  @keyframes parallax {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  /* Readability Issues */
+  .poor-spacing {
+    line-height: 0.8;
+    letter-spacing: -1px;
+    word-spacing: -2px;
+  }
+
+  .tiny-text {
+    font-size: 10px;
+    color: #666;
+  }
+
+  .justified-text {
+    text-align: justify;
+    line-height: 1.2;
+  }
+
+  .all-caps {
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  /* Responsive Layout */
+  @media (max-width: 768px) {
+    .test-violations-page {
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .layout-sidebar-first,
+    .layout-sidebar-second {
+      flex: none;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .main-content {
+      width: 100%;
+    }
+
+    .page-title {
+      font-size: 2rem;
+    }
+
+    .image-grid {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>

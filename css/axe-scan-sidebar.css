@@ -1,0 +1,260 @@
+/**
+ * Axe Scan Sidebar Block Styles
+ */
+
+/* Block wrapper */
+.axe-scan-block-wrapper {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+/* Main scan button */
+.axe-scan-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #2196F3;
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.axe-scan-button:hover {
+  background: #1976D2;
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+  transform: translateY(-1px);
+}
+
+.axe-scan-button:disabled,
+.axe-scan-button.is-loading {
+  background: #90CAF9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.axe-scan-button.is-loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Results container */
+.axe-scan-results-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+/* Summary section */
+.axe-scan-summary h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: #232629;
+  border-bottom: 2px solid #2196F3;
+  padding-bottom: 0.5rem;
+}
+
+.axe-scan-summary h4 {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 600;
+}
+
+/* Status messages */
+.scan-status-summary {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.scan-status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.scan-status-icon {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.scan-status--success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.scan-status--warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+/* Statistics grid */
+.scan-statistics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0.75rem 0.25rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+}
+
+.stat-violations .stat-number {
+  color: #dc3545;
+}
+
+.stat-incomplete .stat-number {
+  color: #ffc107;
+}
+
+.stat-passes .stat-number {
+  color: #28a745;
+}
+
+/* Violations list */
+.violations-list-compact {
+  margin-top: 1rem;
+}
+
+.violations-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.violation-item-compact {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-left: 3px solid #dc3545;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.85rem;
+}
+
+.violation-impact {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+}
+
+.violation-impact--critical {
+  background: #721c24;
+}
+
+.violation-impact--serious {
+  background: #dc3545;
+}
+
+.violation-impact--moderate {
+  background: #fd7e14;
+}
+
+.violation-impact--minor {
+  background: #ffc107;
+  color: #212529;
+}
+
+.violation-desc {
+  display: inline-block;
+  margin-left: 0.25rem;
+  color: #495057;
+}
+
+.violation-count {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.more-violations {
+  padding: 0.5rem;
+  text-align: center;
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* Action buttons */
+.scan-actions {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.button--small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .scan-statistics {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+  }
+}

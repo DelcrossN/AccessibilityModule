@@ -99,3 +99,12 @@ accessibility.save_axe_report:
   methods: [POST]
   requirements:
     _permission: 'access content'
+
+# Accessibility Test Page with Violations
+accessibility.test_violations:
+  path: '/accessibility/test-violations'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityController::testViolations'
+    _title: 'Accessibility Test Page with Violations'
+  requirements:
+    _permission: 'access content'

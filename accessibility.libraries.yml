@@ -52,3 +52,28 @@ mistral_llm:
     - core/jquery
     - core/drupal
     - core/drupal.ajax
+
+# Test violations page with axe scanner popup
+test_violations_styles:
+  version: 1.x
+  css:
+    theme:
+      css/test-violations.css: {}
+  js:
+    js/test-violations.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
+axe-popup:
+  version: 1.x
+  js:
+    js/axe-popup.js: {}
+    js/debug-axe-button.js: {} # Add this line temporarily
+  css:
+    theme:
+      css/axe-popup.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

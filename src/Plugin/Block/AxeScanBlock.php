@@ -30,7 +30,7 @@ class AxeScanBlock extends BlockBase {
       ],
       'button' => [
         '#type' => 'button',
-        '#value' => $this->t('Run Axe Scan'),
+        '#value' => $this->t('⚡ Run Axe Scan'),
         '#attributes' => [
           'class' => [
             'button',
@@ -42,6 +42,7 @@ class AxeScanBlock extends BlockBase {
           'data-scan-type' => 'sidebar',
         ],
       ],
+      // Keep the results container but hide it via CSS since we're using popup now
       'results' => [
         '#type' => 'container',
         '#attributes' => [
@@ -59,6 +60,7 @@ class AxeScanBlock extends BlockBase {
             'axeScanBlock' => [
               'enabled' => TRUE,
               'scanUrl' => \Drupal::request()->getRequestUri(),
+              'popupMode' => TRUE, // Flag to indicate we're using popup mode
             ],
           ],
         ],

@@ -77,3 +77,17 @@ axe-popup:
   dependencies:
     - core/jquery
     - core/drupal
+
+# Axe scan sidebar block with popup functionality
+axe_scan_sidebar:
+  version: 1.x
+  js:
+    js/axe-scan-sidebar.js: {}
+  css:
+    theme:
+      css/axe-scan-sidebar.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/once

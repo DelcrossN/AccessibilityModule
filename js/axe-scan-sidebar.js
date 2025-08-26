@@ -1,10 +1,14 @@
 /**
  * @file
- * Axe scan sidebar block functionality.
+ * Axe scan sidebar block functionality with sliding popup.
  */
 
 (function ($, Drupal, drupalSettings, once) {
   'use strict';
+
+  let isScanning = false;
+  let currentScan = null;
+  let axeLoaded = false;
 
   /**
    * Behavior for the Axe Scan sidebar block.
@@ -14,175 +18,531 @@
       // Initialize the Axe scan button in the sidebar.
       once('axe-scan-sidebar-init', '.js-axe-scan-trigger', context).forEach(function(element) {
         const $button = $(element);
-        const $resultsContainer = $('#axe-scan-sidebar-results');
         
         $button.on('click', function(e) {
           e.preventDefault();
           
-          // Disable button and show loading state
-          $button.prop('disabled', true)
-                 .addClass('is-loading')
-                 .text(Drupal.t('Scanning...'));
-          
-          // Clear previous results
-          $resultsContainer.empty().hide();
-          
-          // Load axe-core if not already loaded
-          if (typeof axe === 'undefined') {
-            // Inject axe-core script
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/axe-core@4.7.2/axe.min.js';
-            script.onload = function() {
-              runAxeScan();
-            };
-            script.onerror = function() {
-              handleScanError('Failed to load Axe scanner library');
-            };
-            document.head.appendChild(script);
-          } else {
-            runAxeScan();
+          if (!isScanning) {
+            showPopupAndScan();
           }
         });
         
-        /**
-         * Run the actual Axe scan.
-         */
-        function runAxeScan() {
-          // Configure axe
-          axe.configure({
-            resultTypes: ['violations', 'incomplete'],
-            runOnly: {
-              type: 'tag',
-              values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']
+        // Initialize popup close events
+        once('violations-popup-close', '#close-popup', context).forEach(function (button) {
+          button.addEventListener('click', function (e) {
+            e.preventDefault();
+            hidePopup();
+          });
+        });
+
+        once('violations-overlay-close', '.popup-overlay', context).forEach(function (overlay) {
+          overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+              e.preventDefault();
+              hidePopup();
             }
           });
-          
-          // Run the scan
-          axe.run(document, function(err, results) {
-            if (err) {
-              handleScanError(err);
-              return;
+        });
+
+        // ESC key to close popup
+        once('violations-esc-close', document, context).forEach(function (doc) {
+          doc.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && document.getElementById('violations-popup').classList.contains('active')) {
+              hidePopup();
             }
-            
-            displayResults(results);
-            
-            // Re-enable button
-            $button.prop('disabled', false)
-                   .removeClass('is-loading')
-                   .text(Drupal.t('Run Axe Scan'));
           });
-        }
-        
-        /**
-         * Display scan results in the sidebar.
-         */
-        function displayResults(results) {
-          let html = '<div class="axe-scan-summary">';
-          
-          // Summary header
-          html += '<h3>' + Drupal.t('Accessibility Scan Results') + '</h3>';
-          
-          const violationsCount = results.violations.length;
-          const incompleteCount = results.incomplete.length;
-          const passesCount = results.passes ? results.passes.length : 0;
-          
-          // Status summary
-          html += '<div class="scan-status-summary">';
-          
-          if (violationsCount === 0 && incompleteCount === 0) {
-            html += '<p class="scan-status scan-status--success">';
-            html += '<span class="scan-status-icon">✓</span> ';
-            html += Drupal.t('No accessibility violations found!');
-            html += '</p>';
-          } else {
-            html += '<p class="scan-status scan-status--warning">';
-            html += '<span class="scan-status-icon">⚠</span> ';
-            html += Drupal.t('Found @violations violations and @incomplete incomplete checks', {
-              '@violations': violationsCount,
-              '@incomplete': incompleteCount
-            });
-            html += '</p>';
-          }
-          
-          html += '</div>'; // .scan-status-summary
-          
-          // Statistics
-          html += '<div class="scan-statistics">';
-          html += '<div class="stat-item stat-violations">';
-          html += '<span class="stat-number">' + violationsCount + '</span>';
-          html += '<span class="stat-label">' + Drupal.t('Violations') + '</span>';
-          html += '</div>';
-          html += '<div class="stat-item stat-incomplete">';
-          html += '<span class="stat-number">' + incompleteCount + '</span>';
-          html += '<span class="stat-label">' + Drupal.t('Needs Review') + '</span>';
-          html += '</div>';
-          html += '<div class="stat-item stat-passes">';
-          html += '<span class="stat-number">' + passesCount + '</span>';
-          html += '<span class="stat-label">' + Drupal.t('Passed') + '</span>';
-          html += '</div>';
-          html += '</div>'; // .scan-statistics
-          
-          // Violations list (compact for sidebar)
-          if (violationsCount > 0) {
-            html += '<div class="violations-list-compact">';
-            html += '<h4>' + Drupal.t('Violations:') + '</h4>';
-            html += '<ul class="violations-summary">';
-            
-            results.violations.slice(0, 5).forEach(function(violation) {
-              html += '<li class="violation-item-compact">';
-              html += '<span class="violation-impact violation-impact--' + violation.impact + '">';
-              html += violation.impact.toUpperCase() + '</span> ';
-              html += '<span class="violation-desc">' + violation.description + '</span>';
-              html += ' <span class="violation-count">(' + violation.nodes.length + ' ' + Drupal.t('instances') + ')</span>';
-              html += '</li>';
-            });
-            
-            if (violationsCount > 5) {
-              html += '<li class="more-violations">' + Drupal.t('...and @count more', {'@count': violationsCount - 5}) + '</li>';
-            }
-            
-            html += '</ul>';
-            html += '</div>';
-          }
-          
-          // Link to full report
-          html += '<div class="scan-actions">';
-          html += '<a href="/accessibility/report" class="button button--small" target="_blank">';
-          html += Drupal.t('View Full Report') + '</a>';
-          html += '</div>';
-          
-          html += '</div>'; // .axe-scan-summary
-          
-          $resultsContainer.html(html).slideDown();
-          
-          // Store results in drupalSettings for potential use elsewhere
-          drupalSettings.accessibility = drupalSettings.accessibility || {};
-          drupalSettings.accessibility.lastScanResults = results;
-          
-          // Trigger custom event
-          $(document).trigger('axeScanComplete', [results]);
-        }
-        
-        /**
-         * Handle scan errors.
-         */
-        function handleScanError(error) {
-          console.error('Axe scan error:', error);
-          
-          const errorHtml = '<div class="messages messages--error">' +
-                           '<h2>' + Drupal.t('Scan Error') + '</h2>' +
-                           '<p>' + Drupal.t('An error occurred while scanning: @error', {'@error': error}) + '</p>' +
-                           '</div>';
-          
-          $resultsContainer.html(errorHtml).show();
-          
-          // Re-enable button
-          $button.prop('disabled', false)
-                 .removeClass('is-loading')
-                 .text(Drupal.t('Run Axe Scan'));
-        }
+        });
       });
     }
   };
+
+  function showPopupAndScan() {
+    createPopup();
+    
+    const popup = document.getElementById('violations-popup');
+    const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+
+    if (!popup) return;
+
+    // Show popup
+    popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Update button and scanning state
+    isScanning = true;
+    updateButtonState(button, true);
+
+    // Start scanning with a small delay to ensure popup is fully rendered
+    setTimeout(() => {
+      runAxeScan();
+    }, 300);
+  }
+
+  function createPopup() {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('violations-popup');
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+
+    // Create popup HTML matching the reference design
+    const popupHtml = `
+      <div id="violations-popup" class="popup-overlay">
+        <div class="popup-content">
+          <div class="popup-header">
+            <h3>Accessibility Scan Results</h3>
+            <button id="close-popup" type="button" aria-label="Close accessibility results">
+              ×
+            </button>
+          </div>
+          <div class="popup-body">
+            <div id="violations-list">
+              <!-- Results will be inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Append to body
+    document.body.insertAdjacentHTML('beforeend', popupHtml);
+
+    // Bind close events using event delegation
+    const popup = document.getElementById('violations-popup');
+    const closeButton = document.getElementById('close-popup');
+    
+    if (closeButton) {
+      closeButton.addEventListener('click', hidePopup);
+    }
+    
+    if (popup) {
+      popup.addEventListener('click', function(e) {
+        if (e.target === popup) {
+          hidePopup();
+        }
+      });
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && popup && popup.classList.contains('active')) {
+        hidePopup();
+      }
+    });
+  }
+
+  function hidePopup() {
+    const popup = document.getElementById('violations-popup');
+    const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+
+    if (popup) {
+      popup.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Force reset button state and cancel any ongoing scan
+    if (isScanning) {
+      forceResetState();
+    }
+  }
+
+  function updateButtonState(button, scanning) {
+    if (!button) return;
+    
+    if (scanning) {
+      button.classList.add('scanning');
+      button.disabled = true;
+      button.innerHTML = '<span class="scan-icon"></span> Scanning...';
+    } else {
+      button.classList.remove('scanning');
+      button.disabled = false;
+      button.innerHTML = '<span>⚡</span> Run Axe Scan';
+    }
+  }
+
+  function resetButton() {
+    const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+    if (button) {
+      isScanning = false;
+      currentScan = null;
+      updateButtonState(button, false);
+    }
+  }
+
+  function forceResetState() {
+    console.log('Force resetting scanner state...');
+    isScanning = false;
+    currentScan = null;
+
+    // Try to cleanup axe if it exists
+    if (typeof window.axe !== 'undefined' && window.axe.cleanup) {
+      try {
+        window.axe.cleanup();
+      } catch (e) {
+        console.log('Axe cleanup not available or failed:', e.message);
+      }
+    }
+
+    const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+    if (button) {
+      updateButtonState(button, false);
+    }
+  }
+
+  async function runAxeScan() {
+    const violationsList = document.getElementById('violations-list');
+
+    if (!violationsList) {
+      resetButton();
+      return;
+    }
+
+    try {
+      // Show scanning message with CSS spinner
+      violationsList.innerHTML = '<div class="scanning-message"><p><span class="scan-icon"></span> Scanning page for accessibility violations...</p></div>';
+
+      // Force reset any existing axe state
+      if (typeof window.axe !== 'undefined') {
+        try {
+          // Try to reset axe state
+          if (window.axe.reset) {
+            window.axe.reset();
+          }
+        } catch (e) {
+          console.log('Axe reset not available:', e.message);
+        }
+      }
+
+      // Load axe if needed
+      if (!axeLoaded || typeof window.axe === 'undefined') {
+        console.log('Loading axe-core...');
+        await loadAxeCore();
+        axeLoaded = true;
+      }
+
+      // Perform the scan
+      await performScan();
+
+    } catch (error) {
+      console.error('Error in runAxeScan:', error);
+      showError('Error during accessibility scan: ' + error.message);
+      resetButton();
+    }
+  }
+
+  function loadAxeCore() {
+    return new Promise((resolve, reject) => {
+      // Remove any existing axe script to ensure clean load
+      const existingScript = document.querySelector('script[src*="axe"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.8.2/axe.min.js';
+      script.crossOrigin = 'anonymous';
+
+      script.onload = function() {
+        console.log('Axe-core loaded successfully');
+        // Longer delay to ensure axe is fully initialized
+        setTimeout(() => {
+          if (typeof window.axe !== 'undefined') {
+            resolve();
+          } else {
+            reject(new Error('Axe failed to initialize'));
+          }
+        }, 500);
+      };
+
+      script.onerror = function() {
+        reject(new Error('Failed to load axe-core'));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  async function performScan() {
+    try {
+      console.log('Starting axe scan...');
+
+      // Wait a bit more before scanning to ensure everything is ready
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Configure axe scan with timeout
+      const scanOptions = {
+        tags: ['wcag2a', 'wcag2aa', 'wcag21aa'],
+        exclude: [['#violations-popup']],
+        timeout: 30000 // 30 second timeout
+      };
+
+      // Create the scan promise with timeout handling
+      currentScan = Promise.race([
+        window.axe.run(document, scanOptions),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Scan timeout')), 35000)
+        )
+      ]);
+
+      const results = await currentScan;
+      console.log('Axe scan completed:', results);
+      displayResults(results);
+      resetButton();
+
+    } catch (error) {
+      console.error('Axe scan error:', error);
+
+      let errorMessage = 'Error during accessibility scan';
+
+      if (error.message && error.message.includes('already running')) {
+        errorMessage = 'Scanner is busy. Resetting and trying again...';
+
+        // Force reset and retry once
+        forceResetState();
+        setTimeout(() => {
+          if (!isScanning) { // Only retry if we're not already scanning again
+            showPopupAndScan();
+          }
+        }, 1000);
+        return;
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = 'Scan timed out. Please try again.';
+      } else if (error.message) {
+        errorMessage += ': ' + error.message;
+      }
+
+      showError(errorMessage);
+      resetButton();
+    }
+  }
+
+  function displayResults(results) {
+    const violationsList = document.getElementById('violations-list');
+    if (!violationsList) return;
+
+    console.log('Displaying results:', results.violations.length + ' violations found');
+
+    if (!results.violations || results.violations.length === 0) {
+      violationsList.innerHTML = '<div class="no-violations"><p>✅ No accessibility violations found!</p></div>';
+      return;
+    }
+
+    // Sort violations by impact (critical -> serious -> moderate -> minor)
+    const impactOrder = { critical: 0, serious: 1, moderate: 2, minor: 3 };
+    const sortedViolations = results.violations.sort((a, b) => {
+      return (impactOrder[a.impact] || 999) - (impactOrder[b.impact] || 999);
+    });
+
+    let html = '<div class="violations-summary">Found ' + results.violations.length + ' violations:</div>';
+
+    sortedViolations.forEach(function (violation, index) {
+      const impact = violation.impact || 'minor';
+      const icon = getViolationIcon(impact);
+      const nodeCount = violation.nodes ? violation.nodes.length : 0;
+      const description = violation.description || violation.help || 'No description available';
+      const violationId = 'violation-' + index;
+      
+      // Generate learn more links
+      const learnMoreLinks = generateLearnMoreLinks(violation);
+
+      html += `
+        <div class="violation-item ${impact}" id="${violationId}">
+          <div class="violation-icon">${icon}</div>
+          <div class="violation-content">
+            <div class="violation-title">${escapeHtml(violation.id)}</div>
+            <div class="violation-description">
+              ${escapeHtml(description)}
+            </div>
+            <div class="violation-actions">
+              ${nodeCount > 1 ? `<button class="violation-count" onclick="highlightViolationInstances('${violationId}', ${JSON.stringify(violation.nodes).replace(/"/g, '&quot;')})" title="Click to highlight ${nodeCount} instances on the page">${nodeCount} instances</button>` : ''}
+              ${learnMoreLinks}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    violationsList.innerHTML = html;
+  }
+
+  // Add this new function to highlight violation instances
+  function highlightViolationInstances(violationId, nodes) {
+    console.log('Highlighting instances for:', violationId);
+
+    // Remove any existing highlights
+    clearHighlights();
+
+    if (!nodes || !Array.isArray(nodes)) {
+      console.warn('No nodes provided for highlighting');
+      return;
+    }
+
+    let highlightedCount = 0;
+
+    nodes.forEach(function(node, index) {
+      if (node.target && Array.isArray(node.target)) {
+        // node.target is an array of selectors
+        node.target.forEach(function(selector) {
+          try {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(function(element) {
+              if (element && !element.closest('#violations-popup')) {
+                highlightElement(element, index);
+                highlightedCount++;
+              }
+            });
+          } catch (e) {
+            console.warn('Invalid selector:', selector, e);
+          }
+        });
+      }
+    });
+
+    if (highlightedCount > 0) {
+      // Show notification
+      showHighlightNotification(highlightedCount);
+
+      // Auto-clear highlights after 10 seconds
+      setTimeout(clearHighlights, 10000);
+    } else {
+      console.warn('No elements found to highlight');
+    }
+  }
+
+  function highlightElement(element, index) {
+    // Create highlight overlay
+    const highlight = document.createElement('div');
+    highlight.className = 'accessibility-highlight';
+    highlight.style.cssText = `
+      position: absolute;
+      background: rgba(255, 0, 0, 0.3);
+      border: 2px solid #ff0000;
+      pointer-events: none;
+      z-index: 9998;
+      border-radius: 4px;
+      box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5);
+      animation: highlightPulse 2s ease-in-out infinite;
+    `;
+
+    // Position the highlight
+    const rect = element.getBoundingClientRect();
+    highlight.style.top = (rect.top + window.scrollY) + 'px';
+    highlight.style.left = (rect.left + window.scrollX) + 'px';
+    highlight.style.width = rect.width + 'px';
+    highlight.style.height = rect.height + 'px';
+
+    // Add number badge
+    const badge = document.createElement('div');
+    badge.textContent = index + 1;
+    badge.style.cssText = `
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      background: #ff0000;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    `;
+    highlight.appendChild(badge);
+
+    document.body.appendChild(highlight);
+
+    // Scroll to first element if it's the first one
+    if (index === 0) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function clearHighlights() {
+    const highlights = document.querySelectorAll('.accessibility-highlight');
+    highlights.forEach(highlight => highlight.remove());
+
+    const notification = document.querySelector('.highlight-notification');
+    if (notification) {
+      notification.remove();
+    }
+  }
+
+  function showHighlightNotification(count) {
+    // Remove existing notification
+    const existing = document.querySelector('.highlight-notification');
+    if (existing) {
+      existing.remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.className = 'highlight-notification';
+    notification.innerHTML = `
+      <p>✨ Highlighted ${count} violation instance${count > 1 ? 's' : ''} on the page</p>
+      <button onclick="clearHighlights()" class="clear-highlights-btn">Clear Highlights</button>
+    `;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0073aa;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 14px;
+      animation: slideDown 0.3s ease-out;
+    `;
+
+    document.body.appendChild(notification);
+  }
+
+  function getViolationIcon(impact) {
+    const icons = {
+      critical: '⚠',
+      serious: '⚠',
+      moderate: '⚠',
+      minor: 'ⓘ'
+    };
+    return icons[impact] || 'ⓘ';
+  }
+
+  function generateLearnMoreLinks(violation) {
+    let links = '<div class="learn-more-links">';
+    
+    // Only show Axe documentation link, renamed to "Learn More..."
+    if (violation.helpUrl) {
+      links += `<a href="${violation.helpUrl}" target="_blank" rel="noopener" class="learn-more-link" title="Learn more about this accessibility rule">
+        Learn More...
+      </a>`;
+    }
+    
+    links += '</div>';
+    return links;
+  }
+
+  function showError(message) {
+    const violationsList = document.getElementById('violations-list');
+    if (violationsList) {
+      violationsList.innerHTML = '<div class="scan-error">❌ ' + escapeHtml(message || 'Error scanning page. Please try again.') + '</div>';
+    }
+  }
+
+  function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Make functions globally available for onclick handlers
+  window.highlightViolationInstances = highlightViolationInstances;
+  window.clearHighlights = clearHighlights;
 
 })(jQuery, Drupal, drupalSettings, once);

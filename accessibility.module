@@ -56,6 +56,31 @@ function accessibility_theme($existing, $type, $theme, $path) {
       'template' => 'accessibility-test-violations',
       'variables' => [],
     ],
+    'accessibility_reports' => [
+      'template' => 'accessibility-reports',
+      'variables' => [
+        'violations' => [],
+        'total_violations' => 0,
+        'critical_count' => 0,
+        'serious_count' => 0,
+        'moderate_count' => 0,
+        'minor_count' => 0,
+      ],
+    ],
+    'accessibility_reports_overview' => [
+      'template' => 'accessibility-reports-overview',
+      'variables' => [
+        'page_reports' => [],
+        'total_pages' => 0,
+        'total_violations' => 0,
+      ],
+    ],
+    'accessibility_page_report' => [
+      'template' => 'accessibility-page-report',
+      'variables' => [
+        'page_data' => NULL,
+      ],
+    ],
   ];
 }
 

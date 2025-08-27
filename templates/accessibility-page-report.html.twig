@@ -1,0 +1,221 @@
+{#
+/**
+ * @file
+ * Template for displaying detailed accessibility report for a specific page.
+ *
+ * Available variables:
+ * - page_data: Object containing page report data
+ */
+#}
+
+<div class="accessibility-page-report">
+  {% if page_data %}
+    <div class="page-report-header">
+      <div class="back-to-reports">
+        <a href="/admin/config/accessibility/report" class="back-link">← {{ 'Back to Reports'|t }}</a>
+      </div>
+      
+      <h2>{{ 'Accessibility Report'|t }}</h2>
+      <div class="page-info">
+        <h3 class="page-title">{{ page_data.title }}</h3>
+        <div class="page-url">{{ page_data.url }}</div>
+        <div class="last-scanned">{{ 'Last scanned: @date'|t({'@date': page_data.last_scanned_formatted}) }}</div>
+      </div>
+    </div>
+
+    <div class="violations-summary">
+      <div class="violations-breakdown">
+        <div class="violations-total">
+          <span class="total-count">{{ page_data.violation_count }}</span>
+          <span class="total-label">{{ 'Total Violations'|t }}</span>
+        </div>
+        
+        {% if page_data.critical_count > 0 %}
+          <div class="violation-stat critical">
+            <span class="violation-count">{{ page_data.critical_count }}</span>
+            <span class="violation-label">{{ 'Critical'|t }}</span>
+          </div>
+        {% endif %}
+        
+        {% if page_data.serious_count > 0 %}
+          <div class="violation-stat serious">
+            <span class="violation-count">{{ page_data.serious_count }}</span>
+            <span class="violation-label">{{ 'Serious'|t }}</span>
+          </div>
+        {% endif %}
+        
+        {% if page_data.moderate_count > 0 %}
+          <div class="violation-stat moderate">
+            <span class="violation-count">{{ page_data.moderate_count }}</span>
+            <span class="violation-label">{{ 'Moderate'|t }}</span>
+          </div>
+        {% endif %}
+        
+        {% if page_data.minor_count > 0 %}
+          <div class="violation-stat minor">
+            <span class="violation-count">{{ page_data.minor_count }}</span>
+            <span class="violation-label">{{ 'Minor'|t }}</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_data.violations|length > 0 %}
+      <div class="violations-detailed">
+        <h4>{{ 'Detailed Violations'|t }}</h4>
+        <div class="violations-list">
+          {% for violation in page_data.violations %}
+            <div class="violation-item {{ violation.impact }}">
+              <div class="violation-header">
+                <div class="violation-impact-badge {{ violation.impact }}">{{ violation.impact|upper }}</div>
+                <h5 class="violation-rule">{{ violation.rule_id }}</h5>
+                <div class="violation-nodes-count">{{ violation.nodes_count }} {{ 'element(s) affected'|t }}</div>
+              </div>
+              
+              <div class="violation-content">
+                {% if violation.description %}
+                  <div class="violation-description">{{ violation.description }}</div>
+                {% endif %}
+                
+                {% if violation.help %}
+                  <div class="violation-help">
+                    <h5>{{ 'How to Fix'|t }}</h5>
+                    <p class="help-text">{{ violation.help }}</p>
+                  </div>
+                {% endif %}
+                
+                {% if violation.help_url %}
+                  <div class="violation-help-url">
+                    <a href="{{ violation.help_url }}" target="_blank" rel="noopener">{{ 'Learn more'|t }} <span class="external-link-icon">↗</span></a>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="no-violations">
+        <h3>{{ 'Great! No accessibility violations found.'|t }}</h3>
+        <p>{{ 'This page appears to meet accessibility standards.'|t }}</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="report-not-found">
+      <h3>{{ 'Report Not Found'|t }}</h3>
+      <p>{{ 'The requested accessibility report could not be found.'|t }}</p>
+      <a href="/admin/config/accessibility/report" class="back-link">{{ 'Back to Reports'|t }}</a>
+    </div>
+  {% endif %}
+</div>
+
+<div{{ attributes.addClass('accessibility-page-report') }}>
+  <div class="page-report-header">
+    <div class="breadcrumb">
+      <a href="{{ reports_overview_url }}">{{ 'Accessibility Reports'|t }}</a>
+      <span class="breadcrumb-separator">›</span>
+      <span class="current-page">{{ 'Page Details'|t }}</span>
+    </div>
+    
+    <h2>{{ title ?: 'Untitled Page' }}</h2>
+    <div class="page-url">{{ url }}</div>
+    
+    <div class="page-summary">
+      <div class="summary-stats">
+        <div class="summary-stat total">
+          <span class="stat-number">{{ summary.violation_count }}</span>
+          <span class="stat-label">{{ 'Total Violations'|t }}</span>
+        </div>
+        
+        {% if summary.critical_count > 0 %}
+        <div class="summary-stat critical">
+          <span class="stat-number">{{ summary.critical_count }}</span>
+          <span class="stat-label">{{ 'Critical'|t }}</span>
+        </div>
+        {% endif %}
+        
+        {% if summary.serious_count > 0 %}
+        <div class="summary-stat serious">
+          <span class="stat-number">{{ summary.serious_count }}</span>
+          <span class="stat-label">{{ 'Serious'|t }}</span>
+        </div>
+        {% endif %}
+        
+        {% if summary.moderate_count > 0 %}
+        <div class="summary-stat moderate">
+          <span class="stat-number">{{ summary.moderate_count }}</span>
+          <span class="stat-label">{{ 'Moderate'|t }}</span>
+        </div>
+        {% endif %}
+        
+        {% if summary.minor_count > 0 %}
+        <div class="summary-stat minor">
+          <span class="stat-number">{{ summary.minor_count }}</span>
+          <span class="stat-label">{{ 'Minor'|t }}</span>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="scan-meta">
+        <div class="scan-date">
+          {{ 'Last scanned: @date'|t({'@date': last_scanned}) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if violations %}
+    <div class="violations-detailed">
+      <h3>{{ 'Detailed Violations'|t }}</h3>
+      
+      {% for violation in violations %}
+        <div class="violation-item {{ violation.impact }}">
+          <div class="violation-header">
+            <div class="violation-impact-badge {{ violation.impact }}">
+              {{ violation.impact|capitalize }}
+            </div>
+            <h4 class="violation-rule">{{ violation.rule_id }}</h4>
+            <div class="violation-nodes-count">
+              {{ violation.nodes_count == 1 ? '@count element'|t({'@count': violation.nodes_count}) : '@count elements'|t({'@count': violation.nodes_count}) }}
+            </div>
+          </div>
+          
+          <div class="violation-content">
+            <div class="violation-description">
+              {{ violation.description }}
+            </div>
+            
+            {% if violation.help %}
+              <div class="violation-help">
+                <h5>{{ 'How to Fix'|t }}</h5>
+                <div class="help-text">{{ violation.help }}</div>
+              </div>
+            {% endif %}
+            
+            {% if violation.help_url %}
+              <div class="violation-help-url">
+                <a href="{{ violation.help_url }}" target="_blank" rel="noopener">
+                  {{ 'Learn more'|t }}
+                  <span class="external-link-icon">↗</span>
+                </a>
+              </div>
+            {% endif %}
+            
+            {% if violation.tags %}
+              <div class="violation-tags">
+                {% for tag in violation.tags %}
+                  <span class="tag">{{ tag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="no-violations">
+      <h3>{{ 'No violations found'|t }}</h3>
+      <p>{{ 'This page has no accessibility violations or has not been scanned yet.'|t }}</p>
+    </div>
+  {% endif %}
+</div>

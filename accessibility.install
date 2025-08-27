@@ -20,37 +20,77 @@ function accessibility_schema() {
         'not null' => TRUE,
         'description' => 'Primary Key: Unique ID for the violation record.',
       ],
-      'scanned_url' => [
+      'url' => [
         'type' => 'varchar',
         'length' => 2048,
         'not null' => TRUE,
         'description' => 'The URL of the page that was scanned.',
       ],
+      'rule_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The axe rule ID that was violated.',
+      ],
       'impact' => [
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
-        'description' => 'The impact level of the violation (e.g., critical, serious).',
+        'description' => 'The impact level of the violation (critical, serious, moderate, minor).',
       ],
-      // Changed from 'text' to 'varchar' to allow for full indexing, improving
-      // performance on queries that group by this field (e.g., Top Issues).
+      'impact_weight' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 4,
+        'description' => 'Numeric weight for sorting by impact (1=critical, 2=serious, 3=moderate, 4=minor).',
+      ],
       'description' => [
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'description' => 'A description of the accessibility issue.',
       ],
+      'help' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Help text for fixing the violation.',
+      ],
       'help_url' => [
         'type' => 'varchar',
         'length' => 2048,
-        'not null' => TRUE,
+        'not null' => FALSE,
         'description' => 'A URL to a page with more information about the issue.',
+      ],
+      'tags' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'JSON encoded array of tags for this violation.',
+      ],
+      'nodes_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of DOM nodes affected by this violation.',
+      ],
+      'nodes_data' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'description' => 'JSON encoded data about the HTML nodes that have the violation.',
+      ],
+      'scanned_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'The URL of the page that was scanned (deprecated, use url field).',
       ],
       'nodes' => [
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE,
-        'description' => 'Serialized data about the HTML nodes that have the violation.',
+        'description' => 'Serialized data about the HTML nodes that have the violation (deprecated, use nodes_data).',
       ],
       'timestamp' => [
         'type' => 'int',
@@ -60,12 +100,84 @@ function accessibility_schema() {
       ],
     ],
     'primary key' => ['id'],
-    // Combined and optimized indexes for better query performance on the stats page.
     'indexes' => [
-      // This composite index speeds up queries filtering by impact within a timeframe.
+      'url' => ['url'],
+      'impact_weight' => ['impact_weight'],
       'timestamp_impact' => ['timestamp', 'impact'],
-      // This index speeds up queries grouping by description within a timeframe.
       'timestamp_description' => ['timestamp', 'description'],
+    ],
+  ];
+
+  $schema['accessibility_reports'] = [
+    'description' => 'Stores summary data for accessibility reports by URL.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique ID for the report record.',
+      ],
+      'url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'The URL of the page that was scanned.',
+      ],
+      'title' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'description' => 'The title of the page that was scanned.',
+      ],
+      'violation_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Total number of violations found on this page.',
+      ],
+      'critical_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of critical violations.',
+      ],
+      'serious_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of serious violations.',
+      ],
+      'moderate_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of moderate violations.',
+      ],
+      'minor_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of minor violations.',
+      ],
+      'last_scanned' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The UNIX timestamp when the page was last scanned.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'url' => ['url'],
+    ],
+    'indexes' => [
+      'last_scanned' => ['last_scanned'],
+      'violation_count' => ['violation_count'],
     ],
   ];
 
@@ -75,9 +187,162 @@ function accessibility_schema() {
 /**
  * Implements hook_uninstall().
  *
- * Removes the accessibility_violations table when the module is uninstalled.
+ * Removes the accessibility tables when the module is uninstalled.
  */
 function accessibility_uninstall() {
-  // Correctly access the schema service through the database connection.
-  \Drupal::database()->schema()->dropTable('accessibility_violations');
+  // Remove both tables.
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  
+  $schema->dropTable('accessibility_violations');
+  $schema->dropTable('accessibility_reports');
+}
+
+/**
+ * Create the new accessibility_reports table.
+ */
+function accessibility_update_8001() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  
+  // Create accessibility_reports table if it doesn't exist
+  if (!$schema->tableExists('accessibility_reports')) {
+    $table = [
+      'description' => 'Stores summary data for accessibility reports by URL.',
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'Primary Key: Unique ID for the report record.',
+        ],
+        'url' => [
+          'type' => 'varchar',
+          'length' => 2048,
+          'not null' => TRUE,
+          'description' => 'The URL of the page that was scanned.',
+        ],
+        'title' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+          'description' => 'The title of the page that was scanned.',
+        ],
+        'violation_count' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Total number of violations found on this page.',
+        ],
+        'critical_count' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Number of critical violations.',
+        ],
+        'serious_count' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Number of serious violations.',
+        ],
+        'moderate_count' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Number of moderate violations.',
+        ],
+        'minor_count' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Number of minor violations.',
+        ],
+        'last_scanned' => [
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'description' => 'The UNIX timestamp when the page was last scanned.',
+        ],
+      ],
+      'primary key' => ['id'],
+      'unique keys' => [
+        'url' => ['url'],
+      ],
+      'indexes' => [
+        'last_scanned' => ['last_scanned'],
+        'violation_count' => ['violation_count'],
+      ],
+    ];
+    
+    $schema->createTable('accessibility_reports', $table);
+  }
+  
+  // Update existing accessibility_violations table structure
+  if ($schema->tableExists('accessibility_violations')) {
+    // Add new fields if they don't exist
+    $new_fields = [
+      'url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'The URL of the page that was scanned.',
+      ],
+      'rule_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The axe rule ID that was violated.',
+      ],
+      'impact_weight' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 4,
+        'description' => 'Numeric weight for sorting by impact (1=critical, 2=serious, 3=moderate, 4=minor).',
+      ],
+      'help' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Help text for fixing the violation.',
+      ],
+      'tags' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'JSON encoded array of tags for this violation.',
+      ],
+      'nodes_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of DOM nodes affected by this violation.',
+      ],
+      'nodes_data' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+        'description' => 'JSON encoded data about the HTML nodes that have the violation.',
+      ],
+    ];
+    
+    foreach ($new_fields as $field_name => $field_spec) {
+      if (!$schema->fieldExists('accessibility_violations', $field_name)) {
+        $schema->addField('accessibility_violations', $field_name, $field_spec);
+      }
+    }
+    
+    // Add new indexes
+    if (!$schema->indexExists('accessibility_violations', 'url')) {
+      $schema->addIndex('accessibility_violations', 'url', ['url']);
+    }
+    if (!$schema->indexExists('accessibility_violations', 'impact_weight')) {
+      $schema->addIndex('accessibility_violations', 'impact_weight', ['impact_weight']);
+    }
+  }
 }

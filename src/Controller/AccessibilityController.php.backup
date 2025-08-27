@@ -228,204 +228,94 @@ class AccessibilityController extends ControllerBase {
    *   A render array for the reports overview page.
    */
   public function reports() {
-    // Get all reports (pages that have been scanned) - show URL cards, not individual violations
+    // Get all violations from the database - SIMPLE VERSION
     $database = $this->database;
     
     try {
       // First check if tables exist
-      if (!$database->schema()->tableExists('accessibility_reports')) {
-        throw new \Exception('Reports table does not exist');
+      if (!$database->schema()->tableExists('accessibility_violations') || 
+          !$database->schema()->tableExists('accessibility_reports')) {
+        throw new \Exception('Tables do not exist');
       }
       
-      // Get all reports (scanned pages) - simple query
-      $reports_result = $database->select('accessibility_reports', 'ar')
-        ->fields('ar')
-        ->orderBy('last_scanned', 'DESC')
+      // Get all violations - simple query
+      $violations_result = $database->select('accessibility_violations', 'av')
+        ->fields('av')
         ->execute()
         ->fetchAll();
       
-      $page_reports = [];
-      $unique_pages = []; // Track unique URLs to avoid double counting
-      $total_unique_pages = 0;
-      $total_violations_across_all_pages = 0;
-      $total_critical = 0;
-      $total_serious = 0;
-      $total_moderate = 0;
-      $total_minor = 0;
+      // Get all reports for page titles
+      $reports_result = $database->select('accessibility_reports', 'ar')
+        ->fields('ar')
+        ->execute()
+        ->fetchAll();
       
+      // Create lookup array for page titles
+      $page_titles = [];
       foreach ($reports_result as $report) {
-        // Build page reports array for display
-        $page_reports[] = [
-          'url' => $report->url,
-          'title' => $report->title,
-          'total_violations' => $report->violation_count,
-          'critical_count' => $report->critical_count,
-          'serious_count' => $report->serious_count,
-          'moderate_count' => $report->moderate_count,
-          'minor_count' => $report->minor_count,
-          'last_scanned' => $report->last_scanned,
-          'encoded_url' => base64_encode($report->url), // For URL routing
-        ];
-        
-        // Count unique pages only (avoid double counting same URL)
-        if (!in_array($report->url, $unique_pages)) {
-          $unique_pages[] = $report->url;
-          $total_unique_pages++;
-        }
-        
-        // Sum up all violations cumulatively (even if same page scanned multiple times)
-        $total_violations_across_all_pages += $report->violation_count;
-        $total_critical += $report->critical_count;
-        $total_serious += $report->serious_count;
-        $total_moderate += $report->moderate_count;
-        $total_minor += $report->minor_count;
+        $page_titles[$report->url] = $report->title;
       }
+      
+      $violations = [];
+      $critical_count = 0;
+      $serious_count = 0;
+      $moderate_count = 0;
+      $minor_count = 0;
+      
+      foreach ($violations_result as $row) {
+        $violation_data = [
+          'id' => $row->rule_id,  // Changed from 'rule_id' to 'id' to match template
+          'impact' => $row->impact,
+          'description' => $row->description,
+          'help' => $row->help,
+          'help_url' => $row->help_url,
+          'instances' => $row->nodes_count,  // Changed from 'nodes_count' to 'instances' to match template
+          'page_title' => $page_titles[$row->url] ?? 'Unknown Page',
+          'page_url' => $row->url,
+        ];
+        $violations[] = $violation_data;
+        
+        // Count by severity
+        switch ($row->impact) {
+          case 'critical':
+            $critical_count++;
+            break;
+          case 'serious':
+            $serious_count++;
+            break;
+          case 'moderate':
+            $moderate_count++;
+            break;
+          default:
+            $minor_count++;
+            break;
+        }
+      }
+      
+      // DEBUG: Show final counts
+      // $this->messenger()->addMessage('DEBUG: Processed ' . count($violations) . ' violations. Critical: ' . $critical_count . ', Serious: ' . $serious_count);
       
     } catch (\Exception $e) {
       // If tables don't exist or there's an error, show empty state
-      $page_reports = [];
-      $unique_pages = [];
-      $total_unique_pages = 0;
-      $total_violations_across_all_pages = 0;
-      $total_critical = 0;
-      $total_serious = 0;
-      $total_moderate = 0;
-      $total_minor = 0;
+      $violations = [];
+      $critical_count = $serious_count = $moderate_count = $minor_count = 0;
     }
     
-    // Build a simple render array with proper CSS attachment
-    $build = [];
-    
-    // Summary Stats - Remove the header, add more violation type cards
-    $build['stats'] = [
-      '#markup' => '<div class="accessibility-reports-overview">' .
-        '<div class="overview-stats">' .
-        '<div class="stat-card pages-scanned"><div class="stat-number">' . $total_unique_pages . '</div><div class="stat-label">Unique Pages Scanned</div></div>' .
-        '<div class="stat-card total-violations"><div class="stat-number">' . $total_violations_across_all_pages . '</div><div class="stat-label">Total Violations</div></div>' .
-        '<div class="stat-card critical-violations"><div class="stat-number">' . $total_critical . '</div><div class="stat-label">Critical</div></div>' .
-        '<div class="stat-card serious-violations"><div class="stat-number">' . $total_serious . '</div><div class="stat-label">Serious</div></div>' .
-        '<div class="stat-card moderate-violations"><div class="stat-number">' . $total_moderate . '</div><div class="stat-label">Moderate</div></div>' .
-        '<div class="stat-card minor-violations"><div class="stat-number">' . $total_minor . '</div><div class="stat-label">Minor</div></div>' .
-        '</div>',
-    ];
-    
-    if (empty($page_reports)) {
-      // No reports found - show available pages where scan block is deployed
-      $available_pages = $this->getAvailablePageUrls();
-      
-      $no_reports_markup = '<div class="no-reports">' .
-        '<p>Select a specific webpage on this website among the options given below to review and analyze current accessibility status:</p>';
-      
-      if (!empty($available_pages)) {
-        $no_reports_markup .= '<div class="available-pages-list">';
-        
-        foreach ($available_pages as $page_info) {
-          $encoded_url = base64_encode($page_info['url']);
-          $report_url = '/admin/config/accessibility/report/page/' . $encoded_url;
-          
-          $no_reports_markup .= '<div class="available-page-card">' .
-            '<div class="page-info">' .
-            '<a href="' . htmlspecialchars($page_info['url']) . '" target="_blank" class="page-link">' .
-            '<strong>' . htmlspecialchars($page_info['title']) . '</strong>' .
-            '</a>' .
-            '<div class="page-url-display">' . htmlspecialchars($page_info['url']) . '</div>' .
-            '</div>' .
-            '<div class="page-actions">' .
-            '<a href="' . htmlspecialchars($page_info['url']) . '?auto_scan=true" class="scan-button" target="_blank">Scan This Page</a>' .
-            '<a href="' . $report_url . '" class="view-report-button">View Report</a>' .
-            '</div>' .
-            '</div>';
-        }
-        
-        $no_reports_markup .= '</div>';
-      }
-      
-      $no_reports_markup .= '</div>';
-      
-      $build['no_reports'] = [
-        '#markup' => $no_reports_markup,
-      ];
-    } else {
-      // List of page reports
-      $build['reports_list'] = [
-        '#markup' => '<div class="page-reports-list">',
-      ];
-      
-      foreach ($page_reports as $report) {
-        $report_url = '/admin/config/accessibility/report/page/' . $report['encoded_url'];
-        $build['reports_list']['#markup'] .= 
-          '<div class="page-report-card">' .
-          '<a href="' . $report_url . '" class="report-card-link">' .
-          '<div class="report-card-header">' .
-          '<h3 class="page-title">' . htmlspecialchars($report['title']) . '</h3>' .
-          '<div class="page-url">' . htmlspecialchars($report['url']) . '</div>' .
-          '<div class="last-scanned">Last scanned: ' . date('M j, Y g:i A', $report['last_scanned']) . '</div>' .
-          '</div>' .
-          '<div class="report-summary-cards">' .
-          '<div class="summary-mini-card total"><div class="mini-count">' . $report['total_violations'] . '</div><div class="mini-label">Total</div></div>';
-        
-        if ($report['critical_count'] > 0) {
-          $build['reports_list']['#markup'] .= '<div class="summary-mini-card critical"><div class="mini-count">' . $report['critical_count'] . '</div><div class="mini-label">Critical</div></div>';
-        }
-        if ($report['serious_count'] > 0) {
-          $build['reports_list']['#markup'] .= '<div class="summary-mini-card serious"><div class="mini-count">' . $report['serious_count'] . '</div><div class="mini-label">Serious</div></div>';
-        }
-        if ($report['moderate_count'] > 0) {
-          $build['reports_list']['#markup'] .= '<div class="summary-mini-card moderate"><div class="mini-count">' . $report['moderate_count'] . '</div><div class="mini-label">Moderate</div></div>';
-        }
-        
-        $build['reports_list']['#markup'] .= 
-          '</div>' .
-          '<div class="view-report-arrow">View Report →</div>' .
-          '</a>' .
-          '</div>';
-      }
-      
-      $build['reports_list']['#markup'] .= '</div>';
-    }
-    
-    // Footer
-    $build['footer'] = [
-      '#markup' => '</div>',
-    ];
-    
-    // Attach CSS library instead of inline styles
-    $build['#attached'] = [
-      'library' => [
-        'accessibility/reports_overview_styling',
+    return [
+      '#theme' => 'accessibility_reports',
+      '#violations' => $violations,
+      '#total_violations' => count($violations),
+      '#critical_count' => $critical_count,
+      '#serious_count' => $serious_count,
+      '#moderate_count' => $moderate_count,
+      '#minor_count' => $minor_count,
+      '#cache' => ['max-age' => 0],
+      '#attached' => [
+        'library' => [
+          'accessibility/reports_styling',
+        ],
       ],
     ];
-    
-    return $build;
-  }
-
-  /**
-   * Get list of available pages where the accessibility scan block is deployed.
-   *
-   * @return array
-   *   Array of page information with url and title.
-   */
-  private function getAvailablePageUrls() {
-    $pages = [];
-    
-    // Get the base URL
-    $base_url = \Drupal::request()->getSchemeAndHttpHost();
-    
-    // Add only specific pages where the block should be deployed
-    $pages[] = [
-      'title' => 'Home Page',
-      'url' => $base_url,
-    ];
-    
-    // Add the test violations page
-    $pages[] = [
-      'title' => 'Accessibility Test Page',
-      'url' => $base_url . '/accessibility/test-violations',
-    ];
-    
-    // Note: Removed node/1 and admin/config/accessibility as requested
-    
-    return $pages;
   }
 
   /**
@@ -457,38 +347,17 @@ class AccessibilityController extends ControllerBase {
       ->execute();
     
     $violations = [];
-    $critical_count = 0;
-    $serious_count = 0;
-    $moderate_count = 0;
-    $minor_count = 0;
-    
     while ($record = $query->fetchAssoc()) {
       $violations[] = [
-        'id' => $record['rule_id'],  // Match popup format
+        'rule_id' => $record['rule_id'],
         'impact' => $record['impact'],
         'description' => $record['description'],
         'help' => $record['help'],
         'help_url' => $record['help_url'],
-        'instances' => $record['nodes_count'],  // Match popup format
         'tags' => json_decode($record['tags'], TRUE) ?: [],
+        'nodes_count' => $record['nodes_count'],
         'nodes_data' => json_decode($record['nodes_data'], TRUE) ?: [],
       ];
-      
-      // Count by severity for summary cards
-      switch ($record['impact']) {
-        case 'critical':
-          $critical_count++;
-          break;
-        case 'serious':
-          $serious_count++;
-          break;
-        case 'moderate':
-          $moderate_count++;
-          break;
-        default:
-          $minor_count++;
-          break;
-      }
     }
 
     // Get summary info
@@ -499,17 +368,13 @@ class AccessibilityController extends ControllerBase {
       ->fetchAssoc();
 
     return [
-      '#theme' => 'accessibility_reports',  // Use same template as before but for individual page
+      '#theme' => 'accessibility_page_report',
+      '#url' => $url,
+      '#title' => $summary_query['title'] ?? 'Unknown Page',
       '#violations' => $violations,
-      '#total_violations' => count($violations),
-      '#critical_count' => $critical_count,
-      '#serious_count' => $serious_count,
-      '#moderate_count' => $moderate_count,
-      '#minor_count' => $minor_count,
-      '#page_title' => $summary_query['title'] ?? 'Unknown Page',
-      '#page_url' => $url,
-      '#last_scanned' => $summary_query['last_scanned'] ? date('M j, Y g:i A', $summary_query['last_scanned']) : 'Unknown',
-      '#cache' => ['max-age' => 0],
+      '#summary' => $summary_query,
+      '#last_scanned' => date('M j, Y g:i A', $summary_query['last_scanned']),
+      '#reports_overview_url' => '/admin/config/accessibility/report',
       '#attached' => [
         'library' => ['accessibility/reports_styling'],
       ],

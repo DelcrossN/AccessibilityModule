@@ -30,23 +30,28 @@ accessibility.stats:
   options:
     _admin_route: TRUE
 
-# Accessibility report for a specific path.
-accessibility.report:
-  path: '/admin/config/accessibility/report/{path}'
+# Reports overview page - lists all pages with violations
+accessibility.reports:
+  path: '/admin/config/accessibility/report'
   defaults:
-    _controller: 'Drupal\accessibility\Controller\AccessibilityController::report'
-    _title: 'Accessibility Report'
-    path: '/'
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::reports'
+    _title: 'Accessibility Reports'
   requirements:
     _permission: 'administer site configuration'
   options:
     _admin_route: TRUE
-    parameters:
-      path:
-        type: path
-        schema:
-          type: string
-          pattern: '^[^/]*$'
+
+# Detailed report for a specific page
+accessibility.page_report:
+  path: '/admin/config/accessibility/report/page/{encoded_url}'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::pageReport'
+    _title: 'Page Accessibility Report'
+  requirements:
+    _permission: 'administer site configuration'
+    encoded_url: '.+'
+  options:
+    _admin_route: TRUE
 
 # LLM Test Page
 accessibility.llm_test:
@@ -98,7 +103,9 @@ accessibility.save_axe_report:
     _controller: '\Drupal\accessibility\Controller\AxeReportController::saveReport'
   methods: [POST]
   requirements:
-    _permission: 'access content'
+    _access: 'TRUE'
+  options:
+    _auth: ['cookie']
 
 # Accessibility Test Page with Violations
 accessibility.test_violations:
@@ -108,3 +115,4 @@ accessibility.test_violations:
     _title: 'Accessibility Test Page with Violations'
   requirements:
     _permission: 'access content'
+

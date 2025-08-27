@@ -352,3 +352,37 @@
   outline: 2px solid #005a87;
   outline-offset: 2px;
 }
+
+/* See Full Report Button */
+.popup-actions {
+  margin: 1rem 0;
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.see-full-report-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #3182ce;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 2px solid #3182ce;
+}
+
+.see-full-report-btn:hover {
+  background: #2c5282;
+  border-color: #2c5282;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(49, 130, 206, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.see-full-report-btn:active {
+  transform: translateY(0);
+}

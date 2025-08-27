@@ -455,3 +455,4 @@
   window.clearHighlights = clearHighlights;
 
 })(Drupal, jQuery);
+

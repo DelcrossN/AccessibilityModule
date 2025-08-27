@@ -72,11 +72,57 @@
     
     console.log('Accessibility scan results cached for:', pageUrl);
     
+    // Save results to server for reports
+    saveResultsToServer(results);
+    
     // Optional: Clean up old cache entries (keep last 10 pages)
     if (scanCache.size > 10) {
       const oldestKey = scanCache.keys().next().value;
       scanCache.delete(oldestKey);
     }
+  }
+
+  /**
+   * Save scan results to server for reports system.
+   */
+  function saveResultsToServer(results) {
+    const reportData = {
+      url: window.location.href,
+      title: document.title,
+      violations: results.violations,
+      timestamp: Date.now(),
+      user_agent: navigator.userAgent
+    };
+
+    console.log('Sending scan results to server:', reportData);
+
+    // Send to server endpoint
+    fetch('/save-axe-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reportData)
+    })
+    .then(response => {
+      console.log('Server response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Scan results saved to server successfully:', data);
+      if (data.success) {
+        console.log('Report saved successfully. Summary:', data.summary);
+      } else {
+        console.error('Server returned error:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error saving scan results to server:', error);
+      // Still continue with the UI display even if server save fails
+    });
   }
 
   /**
@@ -96,10 +142,31 @@
   }
 
   /**
+   * Check for auto-scan parameter and automatically trigger the scan popup.
+   */
+  function checkForAutoScanParameter() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_scan') === 'true') {
+      // Wait a moment for the page to fully load, then trigger scan
+      setTimeout(() => {
+        showPopupAndScan();
+        
+        // Clean URL parameter after triggering scan
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.delete('auto_scan');
+        window.history.replaceState({}, document.title, newUrl.toString());
+      }, 1000); // 1 second delay to ensure page is ready
+    }
+  }
+
+  /**
    * Behavior for the Axe Scan sidebar block.
    */
   Drupal.behaviors.axeScanSidebar = {
     attach: function (context, settings) {
+      // Check for auto-scan parameter on page load
+      checkForAutoScanParameter();
+      
       // Initialize the Axe scan button in the sidebar.
       once('axe-scan-sidebar-init', '.js-axe-scan-trigger', context).forEach(function(element) {
         const $button = $(element);

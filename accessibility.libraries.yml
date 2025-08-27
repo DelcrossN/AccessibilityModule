@@ -91,3 +91,21 @@ axe_scan_sidebar:
     - core/drupal
     - core/drupalSettings
     - core/once
+
+# Reports styling for accessibility reports pages
+reports_styling:
+  version: 1.x
+  css:
+    theme:
+      css/accessibility-reports.css: {}
+  dependencies:
+    - core/drupal
+
+# Reports overview styling 
+reports_overview_styling:
+  version: 1.x
+  css:
+    theme:
+      css/accessibility-reports-overview.css: {}
+  dependencies:
+    - core/drupal

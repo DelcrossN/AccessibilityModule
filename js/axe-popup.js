@@ -445,7 +445,7 @@
     const notification = document.createElement('div');
     notification.className = 'highlight-notification';
     notification.innerHTML = `
-      <p>✨ Highlighted ${count} violation instance${count > 1 ? 's' : ''} on the page</p>
+      <p> Highlighted ${count} violation instance${count > 1 ? 's' : ''} on the page</p>
       <button onclick="clearHighlights()" class="clear-highlights-btn">Clear Highlights</button>
     `;
 

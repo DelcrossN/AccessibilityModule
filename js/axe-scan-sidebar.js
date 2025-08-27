@@ -9,6 +9,91 @@
   let isScanning = false;
   let currentScan = null;
   let axeLoaded = false;
+  
+  // Cache-related variables
+  let scanCache = new Map();
+  let currentPageHash = null;
+
+  /**
+   * Generate a simple hash of page content to detect changes.
+   */
+  function generatePageHash() {
+    const htmlContent = document.documentElement.innerHTML;
+    const stylesheets = Array.from(document.styleSheets).map(sheet => {
+      try {
+        // Try to access stylesheet rules (may fail for cross-origin stylesheets)
+        return Array.from(sheet.cssRules || sheet.rules || []).map(rule => rule.cssText).join('');
+      } catch (e) {
+        // Fallback for cross-origin stylesheets - use href
+        return sheet.href || '';
+      }
+    }).join('');
+    
+    const content = htmlContent + stylesheets;
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString();
+  }
+
+  /**
+   * Get cached scan results if available and page hasn't changed.
+   */
+  function getCachedResults() {
+    const pageUrl = window.location.href;
+    const currentHash = generatePageHash();
+    
+    // Check if we have cached results for this URL
+    const cacheEntry = scanCache.get(pageUrl);
+    if (cacheEntry && cacheEntry.hash === currentHash) {
+      console.log('Using cached accessibility scan results');
+      return cacheEntry.results;
+    }
+    
+    console.log('Page content changed or no cache found, will perform new scan');
+    return null;
+  }
+
+  /**
+   * Cache scan results with current page hash.
+   */
+  function cacheResults(results) {
+    const pageUrl = window.location.href;
+    const currentHash = generatePageHash();
+    
+    scanCache.set(pageUrl, {
+      hash: currentHash,
+      results: results,
+      timestamp: Date.now()
+    });
+    
+    console.log('Accessibility scan results cached for:', pageUrl);
+    
+    // Optional: Clean up old cache entries (keep last 10 pages)
+    if (scanCache.size > 10) {
+      const oldestKey = scanCache.keys().next().value;
+      scanCache.delete(oldestKey);
+    }
+  }
+
+  /**
+   * Clear all cached scan results.
+   */
+  function clearScanCache() {
+    scanCache.clear();
+    console.log('All accessibility scan cache cleared');
+  }
+
+  /**
+   * Clear cache for specific URL.
+   */
+  function clearCacheForUrl(url) {
+    scanCache.delete(url);
+    console.log('Cache cleared for URL:', url);
+  }
 
   /**
    * Behavior for the Axe Scan sidebar block.
@@ -57,25 +142,49 @@
   };
 
   function showPopupAndScan() {
-    createPopup();
-    
-    const popup = document.getElementById('violations-popup');
+    // Check for cached results first, before creating popup
+    const cachedResults = getCachedResults();
     const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+    
+    if (cachedResults) {
+      // Create popup and show cached results immediately
+      createPopup();
+      const popup = document.getElementById('violations-popup');
+      if (!popup) return;
+      
+      // Show popup
+      popup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Display cached results immediately (no delay)
+      displayResults(cachedResults, true);
+      updateButtonState(button, false);
+      isScanning = false;
+    } else {
+      // Create popup for fresh scan
+      createPopup();
+      const popup = document.getElementById('violations-popup');
+      if (!popup) return;
 
-    if (!popup) return;
+      // Show popup
+      popup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Hide footer immediately when starting fresh scan
+      const footer = document.querySelector('.popup-footer');
+      if (footer) {
+        footer.classList.remove('show');
+      }
 
-    // Show popup
-    popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
+      // Update button and scanning state
+      isScanning = true;
+      updateButtonState(button, true);
 
-    // Update button and scanning state
-    isScanning = true;
-    updateButtonState(button, true);
-
-    // Start scanning with a small delay to ensure popup is fully rendered
-    setTimeout(() => {
-      runAxeScan();
-    }, 300);
+      // Start scanning with a small delay to ensure popup is fully rendered
+      setTimeout(() => {
+        runAxeScan();
+      }, 300);
+    }
   }
 
   function createPopup() {
@@ -104,6 +213,14 @@
             <div id="violations-list">
               <!-- Results will be inserted here -->
             </div>
+          </div>
+          <div class="popup-footer">
+            <a href="https://my-drupal10-site.ddev.site/admin/config/accessibility/report" 
+               class="full-report-button" 
+               target="_blank" 
+               rel="noopener">
+              See Full Report
+            </a>
           </div>
         </div>
       </div>
@@ -254,6 +371,12 @@
       // Show scanning message with CSS spinner
       violationsList.innerHTML = '<div class="scanning-message"><p><span class="scan-icon"></span> Scanning page for accessibility violations...</p></div>';
 
+      // Hide footer during scanning
+      const footer = document.querySelector('.popup-footer');
+      if (footer) {
+        footer.classList.remove('show');
+      }
+
       // Force reset any existing axe state
       if (typeof window.axe !== 'undefined') {
         try {
@@ -339,6 +462,10 @@
 
       const results = await currentScan;
       console.log('Axe scan completed:', results);
+      
+      // Cache the results for future use
+      cacheResults(results);
+      
       displayResults(results);
       resetButton();
 
@@ -369,14 +496,22 @@
     }
   }
 
-  function displayResults(results) {
+  function displayResults(results, fromCache = false) {
     const violationsList = document.getElementById('violations-list');
     if (!violationsList) return;
 
     console.log('Displaying results:', results.violations.length + ' violations found');
 
     if (!results.violations || results.violations.length === 0) {
-      violationsList.innerHTML = '<div class="no-violations"><p>No accessibility violations found!</p></div>';
+      const cacheIndicator = fromCache ? ' <span style="font-size: 0.85em; opacity: 0.7;">(cached)</span>' : '';
+      violationsList.innerHTML = '<div class="no-violations"><p>No accessibility violations found!' + cacheIndicator + '</p></div>';
+      
+      // Show the footer with "See Full Report" button even when no violations found
+      const footer = document.querySelector('.popup-footer');
+      if (footer) {
+        footer.classList.add('show');
+      }
+      
       return;
     }
 
@@ -390,7 +525,8 @@
       return aOrder - bOrder;
     });
 
-    let html = '<div class="violations-summary">Found ' + results.violations.length + ' violations:</div>';
+    const cacheIndicator = fromCache ? ' <span style="font-size: 0.85em; opacity: 0.7; font-weight: normal;">(cached) <a href="#" id="force-rescan" style="color: #2c5282; text-decoration: underline; font-size: 0.9em;">Force Rescan</a></span>' : '';
+    let html = '<div class="violations-summary">Found ' + results.violations.length + ' violations:' + cacheIndicator + '</div>';
 
     sortedViolations.forEach(function (violation, index) {
       const impact = violation.impact || 'minor';
@@ -401,12 +537,16 @@
       
       // Generate learn more links
       const learnMoreLinks = generateLearnMoreLinks(violation);
+      const statusText = getViolationStatusText(impact);
 
       html += `
         <div class="violation-item ${impact}" id="${violationId}">
           <div class="violation-icon">${icon}</div>
           <div class="violation-content">
-            <div class="violation-title">${escapeHtml(violation.id)}</div>
+            <div class="violation-title-row">
+              <div class="violation-title">${escapeHtml(violation.id)}</div>
+              <div class="violation-status">${statusText}</div>
+            </div>
             <div class="violation-description">
               ${escapeHtml(description)}
             </div>
@@ -420,6 +560,36 @@
     });
 
     violationsList.innerHTML = html;
+    
+    // Show the footer with "See Full Report" button after displaying results
+    const footer = document.querySelector('.popup-footer');
+    if (footer) {
+      footer.classList.add('show');
+    }
+    
+    // Add event listener for force rescan link if it exists
+    if (fromCache) {
+      const forceRescanLink = document.getElementById('force-rescan');
+      if (forceRescanLink) {
+        forceRescanLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Clear cache for current page and perform fresh scan
+          const pageUrl = window.location.href;
+          scanCache.delete(pageUrl);
+          console.log('Cache cleared, performing fresh scan...');
+          
+          // Update button state and start new scan
+          const button = document.getElementById('run-axe-scan-sidebar') || document.querySelector('.js-axe-scan-trigger');
+          isScanning = true;
+          updateButtonState(button, true);
+          
+          // Start scanning
+          setTimeout(() => {
+            runAxeScan();
+          }, 100);
+        });
+      }
+    }
   }
 
   // Add this new function to highlight violation instances
@@ -570,13 +740,28 @@
     return icons[impact] || 'ⓘ';
   }
 
+  function getViolationStatusText(impact) {
+    switch (impact) {
+      case 'critical':
+        return 'Status: CRITICAL';
+      case 'serious':
+        return 'Status: SEVERE';
+      case 'moderate':
+        return 'Status: MODERATE';
+      case 'minor':
+        return 'Status: MINOR';
+      default:
+        return 'Status: UNKNOWN';
+    }
+  }
+
   function generateLearnMoreLinks(violation) {
     let links = '<div class="learn-more-links">';
     
     // Only show Axe documentation link, renamed to "Learn More..."
     if (violation.helpUrl) {
       links += `<a href="${violation.helpUrl}" target="_blank" rel="noopener" class="learn-more-link" title="Learn more about this accessibility rule">
-        Learn More...
+        Learn More ↗
       </a>`;
     }
     
@@ -588,6 +773,12 @@
     const violationsList = document.getElementById('violations-list');
     if (violationsList) {
       violationsList.innerHTML = '<div class="scan-error">❌ ' + escapeHtml(message || 'Error scanning page. Please try again.') + '</div>';
+    }
+    
+    // Hide footer during error state
+    const footer = document.querySelector('.popup-footer');
+    if (footer) {
+      footer.classList.remove('show');
     }
   }
 
@@ -601,5 +792,9 @@
   // Make functions globally available for onclick handlers
   window.highlightViolationInstances = highlightViolationInstances;
   window.clearHighlights = clearHighlights;
+  
+  // Make cache functions available for debugging
+  window.clearAxeScanCache = clearScanCache;
+  window.clearAxeCacheForUrl = clearCacheForUrl;
 
 })(jQuery, Drupal, drupalSettings, once);

@@ -86,6 +86,7 @@ axe_scan_sidebar:
   css:
     theme:
       css/axe-scan-sidebar.css: {}
+      css/chatbot-interface.css: {}
   dependencies:
     - core/jquery
     - core/drupal

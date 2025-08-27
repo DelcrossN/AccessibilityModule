@@ -6,8 +6,8 @@ package: 'Accessibility Suite'
 # Drupal versions supported
 core_version_requirement: '^9 || ^10 || ^11'
 
-dependencies:
-  - jquery_ui:jquery_ui
-  - charts:charts
+# dependencies:
+#   - jquery_ui:jquery_ui
+#   - charts:charts
 
 

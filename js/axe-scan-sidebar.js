@@ -606,6 +606,47 @@
       const learnMoreLinks = generateLearnMoreLinks(violation);
       const statusText = getViolationStatusText(impact);
 
+      // Check if chatbot is enabled and user opted in
+      const chatbotEnabled = window.drupalSettings && 
+                            window.drupalSettings.accessibility && 
+                            window.drupalSettings.accessibility.axeScanBlock && 
+                            window.drupalSettings.accessibility.axeScanBlock.chatbot &&
+                            window.drupalSettings.accessibility.axeScanBlock.chatbot.enabled;
+      
+      const chatbotOptedIn = document.getElementById('enable-chatbot-help') && 
+                           document.getElementById('enable-chatbot-help').checked;
+
+      let chatbotInterface = '';
+      if (chatbotEnabled && chatbotOptedIn) {
+        const chatbotContainerId = `chatbot-${violationId}`;
+        chatbotInterface = `
+          <div class="chatbot-interface" id="${chatbotContainerId}">
+            <div class="chatbot-header">
+              <button type="button" class="chatbot-toggle" onclick="toggleChatbot('${chatbotContainerId}')">
+                🤖 Ask AI for Help
+              </button>
+            </div>
+            <div class="chatbot-content" style="display: none;">
+              <div class="chatbot-input-section">
+                <textarea 
+                  placeholder="Ask a specific question about fixing this violation..." 
+                  class="chatbot-question-input"
+                  rows="2"
+                  id="${chatbotContainerId}-input"
+                ></textarea>
+                <button 
+                  type="button" 
+                  class="chatbot-submit-btn"
+                  onclick="submitChatbotQuestion('${chatbotContainerId}', '${escapeHtml(violation.id)}', '${escapeHtml(description).replace(/'/g, "\\'")}')">
+                  Get AI Solution
+                </button>
+              </div>
+              <div class="chatbot-response"></div>
+            </div>
+          </div>
+        `;
+      }
+
       html += `
         <div class="violation-item ${impact}" id="${violationId}">
           <div class="violation-icon">${icon}</div>
@@ -621,6 +662,7 @@
               ${nodeCount > 1 ? `<button class="violation-count" onclick="highlightViolationInstances('${violationId}', ${JSON.stringify(violation.nodes).replace(/"/g, '&quot;')})" title="Click to highlight ${nodeCount} instances on the page">${nodeCount} instances</button>` : ''}
               ${learnMoreLinks}
             </div>
+            ${chatbotInterface}
           </div>
         </div>
       `;
@@ -863,5 +905,75 @@
   // Make cache functions available for debugging
   window.clearAxeScanCache = clearScanCache;
   window.clearAxeCacheForUrl = clearCacheForUrl;
+
+  // Chatbot functionality
+  window.toggleChatbot = function(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const content = container.querySelector('.chatbot-content');
+    const toggle = container.querySelector('.chatbot-toggle');
+    
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      toggle.textContent = '🤖 Hide AI Help';
+    } else {
+      content.style.display = 'none';
+      toggle.textContent = '🤖 Ask AI for Help';
+    }
+  };
+
+  window.submitChatbotQuestion = function(containerId, violationId, violationDescription) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const input = container.querySelector('.chatbot-question-input');
+    const responseDiv = container.querySelector('.chatbot-response');
+    const submitBtn = container.querySelector('.chatbot-submit-btn');
+    
+    const userQuestion = input.value.trim();
+    
+    // Show loading state
+    responseDiv.innerHTML = '<div class="loading">🤔 Thinking...</div>';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Getting Solution...';
+    
+    // Prepare the AJAX request
+    const formData = new FormData();
+    formData.append('violation_id', violationId);
+    formData.append('violation_description', violationDescription);
+    formData.append('user_question', userQuestion);
+    
+    fetch('/accessibility/chatbot/ajax', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        let solutionHtml = '<div class="chatbot-solution">';
+        solutionHtml += '<div class="solution-header">💡 AI Accessibility Solution</div>';
+        solutionHtml += '<div class="solution-content">' + data.solution.replace(/\n/g, '<br>') + '</div>';
+        if (data.model_used) {
+          solutionHtml += '<div class="solution-footer">Powered by ' + data.model_used + '</div>';
+        }
+        solutionHtml += '</div>';
+        responseDiv.innerHTML = solutionHtml;
+      } else {
+        responseDiv.innerHTML = '<div class="error">⚠️ ' + (data.error || 'Failed to get AI solution') + '</div>';
+      }
+    })
+    .catch(error => {
+      console.error('Chatbot request failed:', error);
+      responseDiv.innerHTML = '<div class="error">⚠️ Network error. Please try again.</div>';
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Get AI Solution';
+    });
+  };
 
 })(jQuery, Drupal, drupalSettings, once);

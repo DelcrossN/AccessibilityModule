@@ -21,6 +21,8 @@ class AxeScanBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
+    $config = \Drupal::config('accessibility.settings');
+    
     // Create the button render array.
     $build = [
       '#type' => 'container',
@@ -28,39 +30,61 @@ class AxeScanBlock extends BlockBase {
         'class' => ['axe-scan-block-wrapper'],
         'id' => 'axe-scan-block',
       ],
-      'button' => [
-        '#type' => 'button',
-        '#value' => $this->t('Run Axe Scan'),
+    ];
+
+    // Add chatbot settings checkbox if chatbot is enabled globally
+    if ($config->get('chatbot_enabled')) {
+      $build['chatbot_option'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable AI Chatbot Help'),
+        '#description' => $this->t('Show AI-powered accessibility solutions below each violation.'),
+        '#default_value' => TRUE,
         '#attributes' => [
-          'class' => [
-            'button',
-            'button--primary', 
-            'axe-scan-button',
-            'js-axe-scan-trigger'
-          ],
-          'id' => 'run-axe-scan-sidebar',
-          'data-scan-type' => 'sidebar',
+          'id' => 'enable-chatbot-help',
+          'class' => ['chatbot-enable-checkbox'],
         ],
+      ];
+    }
+
+    $build['button'] = [
+      '#type' => 'button',
+      '#value' => $this->t('Run Axe Scan'),
+      '#attributes' => [
+        'class' => [
+          'button',
+          'button--primary', 
+          'axe-scan-button',
+          'js-axe-scan-trigger'
+        ],
+        'id' => 'run-axe-scan-sidebar',
+        'data-scan-type' => 'sidebar',
       ],
-      // Keep the results container but hide it via CSS since we're using popup now
-      'results' => [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['axe-scan-results-container'],
-          'id' => 'axe-scan-sidebar-results',
-          'style' => 'display: none;',
-        ],
+    ];
+
+    // Keep the results container but hide it via CSS since we're using popup now
+    $build['results'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['axe-scan-results-container'],
+        'id' => 'axe-scan-sidebar-results',
+        'style' => 'display: none;',
       ],
-      '#attached' => [
-        'library' => [
-          'accessibility/axe_scan_sidebar',
-        ],
-        'drupalSettings' => [
-          'accessibility' => [
-            'axeScanBlock' => [
-              'enabled' => TRUE,
-              'scanUrl' => \Drupal::request()->getRequestUri(),
-              'popupMode' => TRUE, // Flag to indicate we're using popup mode
+    ];
+
+    $build['#attached'] = [
+      'library' => [
+        'accessibility/axe_scan_sidebar',
+      ],
+      'drupalSettings' => [
+        'accessibility' => [
+          'axeScanBlock' => [
+            'enabled' => TRUE,
+            'scanUrl' => \Drupal::request()->getRequestUri(),
+            'popupMode' => TRUE, // Flag to indicate we're using popup mode
+            'chatbot' => [
+              'enabled' => $config->get('chatbot_enabled'),
+              'apiEndpoint' => $config->get('chatbot_api_endpoint'),
+              'model' => $config->get('chatbot_model') ?: 'gpt-3.5-turbo',
             ],
           ],
         ],

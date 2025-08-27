@@ -116,3 +116,25 @@ accessibility.test_violations:
   requirements:
     _permission: 'access content'
 
+# Chatbot AJAX endpoint
+accessibility.chatbot.ajax:
+  path: '/accessibility/chatbot/ajax'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\ChatbotController::handleChatbotRequest'
+  methods: [POST]
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _auth: ['cookie']
+
+# Chatbot solution AJAX endpoint
+accessibility.chatbot.solution:
+  path: '/accessibility/chatbot/solution'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\ChatbotController::getChatbotSolution'
+  methods: [POST]
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _auth: ['cookie']
+

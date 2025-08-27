@@ -137,6 +137,62 @@ class AccSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Show debug information in the logs.'),
     ];
 
+    // Chatbot Settings
+    $form['chatbot_settings'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Chatbot Settings'),
+      '#open' => FALSE,
+    ];
+
+    $form['chatbot_settings']['chatbot_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable Chatbot for Accessibility Help'),
+      '#default_value' => $config->get('chatbot_enabled') ?? FALSE,
+      '#description' => $this->t('Enable chatbot interface below each violation to provide AI-powered accessibility solutions.'),
+    ];
+
+    $form['chatbot_settings']['chatbot_api_endpoint'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Chatbot API Endpoint'),
+      '#default_value' => $config->get('chatbot_api_endpoint') ?: '',
+      '#description' => $this->t('Enter the API endpoint URL for the chatbot service.<br><strong>Google AI Studio (Gemini 2.0 Flash):</strong> https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent<br><strong>OpenAI:</strong> https://api.openai.com/v1/chat/completions'),
+      '#states' => [
+        'visible' => [
+          ':input[name="chatbot_enabled"]' => ['checked' => TRUE],
+        ],
+        'required' => [
+          ':input[name="chatbot_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
+    $form['chatbot_settings']['chatbot_api_key'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Chatbot API Key'),
+      '#default_value' => $config->get('chatbot_api_key') ?: '',
+      '#description' => $this->t('Enter the API key for authenticating with the chatbot service.<br><strong>Google AI Studio:</strong> Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio API Keys</a><br><strong>OpenAI:</strong> Get your API key from OpenAI dashboard'),
+      '#states' => [
+        'visible' => [
+          ':input[name="chatbot_enabled"]' => ['checked' => TRUE],
+        ],
+        'required' => [
+          ':input[name="chatbot_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
+    $form['chatbot_settings']['chatbot_model'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Chatbot Model'),
+      '#default_value' => $config->get('chatbot_model') ?: 'gemini-2.0-flash-exp',
+      '#description' => $this->t('Specify the AI model to use for chatbot responses.<br><strong>Google AI Studio:</strong> gemini-2.0-flash-exp, gemini-1.5-flash, gemini-1.5-pro<br><strong>OpenAI:</strong> gpt-3.5-turbo, gpt-4, gpt-4-turbo'),
+      '#states' => [
+        'visible' => [
+          ':input[name="chatbot_enabled"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -152,13 +208,16 @@ class AccSettingsForm extends ConfigFormBase {
            ->set('widget_position', $form_state->getValue('widget_position'))
            ->set('debug_mode', $form_state->getValue('debug_mode'));
     
-    // Save LLM settings
-    $config->set('llm_enabled', (bool) $form_state->getValue('llm_enabled'))
-           ->set('llm_openrouter_key', $form_state->getValue('llm_openrouter_key'))
-           ->set('llm_model', $form_state->getValue('llm_model'))
-           ->set('llm_temperature', (float) $form_state->getValue('llm_temperature'))
-           ->set('llm_max_tokens', (int) $form_state->getValue('llm_max_tokens'))
-           ->set('llm_cache_ttl', (int) $form_state->getValue('llm_cache_ttl'))
+    // Save scan settings
+    $config->set('auto_scan', $form_state->getValue('auto_scan'))
+           ->set('scan_frequency', $form_state->getValue('scan_frequency'))
+           ->set('api_endpoint', $form_state->getValue('api_endpoint'));
+    
+    // Save chatbot settings
+    $config->set('chatbot_enabled', (bool) $form_state->getValue('chatbot_enabled'))
+           ->set('chatbot_api_endpoint', $form_state->getValue('chatbot_api_endpoint'))
+           ->set('chatbot_api_key', $form_state->getValue('chatbot_api_key'))
+           ->set('chatbot_model', $form_state->getValue('chatbot_model'))
            ->save();
 
     parent::submitForm($form, $form_state);

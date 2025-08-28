@@ -4,6 +4,7 @@ namespace Drupal\accessibility\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Cache\CacheBackendInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 
@@ -34,6 +35,13 @@ class ChatbotService {
   protected $loggerFactory;
 
   /**
+   * The cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
+  /**
    * Constructs a new ChatbotService object.
    *
    * @param \GuzzleHttp\ClientInterface $http_client
@@ -42,11 +50,14 @@ class ChatbotService {
    *   The config factory.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend.
    */
-  public function __construct(ClientInterface $http_client, ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(ClientInterface $http_client, ConfigFactoryInterface $config_factory, LoggerChannelFactoryInterface $logger_factory, CacheBackendInterface $cache) {
     $this->httpClient = $http_client;
     $this->configFactory = $config_factory;
     $this->loggerFactory = $logger_factory;
+    $this->cache = $cache;
   }
 
   /**
@@ -64,7 +75,7 @@ class ChatbotService {
    */
   public function getAccessibilitySolution($violation_id, $violation_description, $user_question = '') {
     $config = $this->configFactory->get('accessibility.settings');
-    
+
     if (!$config->get('chatbot_enabled')) {
       return [
         'success' => FALSE,
@@ -81,6 +92,22 @@ class ChatbotService {
         'success' => FALSE,
         'error' => 'Chatbot API endpoint or key not configured.',
       ];
+    }
+
+    // Generate cache key based on inputs
+    $cache_key = $this->generateCacheKey($violation_id, $violation_description, $user_question, $model);
+    $cache_ttl = $config->get('chatbot_cache_ttl') ?: 3600; // Default 1 hour
+
+    // Check cache first
+    $cached_result = $this->cache->get($cache_key);
+    if ($cached_result && $cached_result->valid) {
+      $this->loggerFactory->get('accessibility')->info('Chatbot response served from cache for violation: @violation', [
+        '@violation' => $violation_id,
+      ]);
+
+      $cached_data = $cached_result->data;
+      $cached_data['cached'] = TRUE;
+      return $cached_data;
     }
 
     // Construct the prompt for the chatbot
@@ -119,11 +146,16 @@ class ChatbotService {
         $data = json_decode($response->getBody()->getContents(), TRUE);
 
         if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
-          return [
+          $result = [
             'success' => TRUE,
             'solution' => $data['candidates'][0]['content']['parts'][0]['text'],
             'model_used' => $model,
           ];
+
+          // Cache the successful result
+          $this->cache->set($cache_key, $result, time() + $cache_ttl, ['accessibility_chatbot']);
+
+          return $result;
         }
         else {
           $this->loggerFactory->get('accessibility')->error('Invalid Google AI API response: @response', [
@@ -163,11 +195,16 @@ class ChatbotService {
         $data = json_decode($response->getBody()->getContents(), TRUE);
 
         if (isset($data['choices'][0]['message']['content'])) {
-          return [
+          $result = [
             'success' => TRUE,
             'solution' => $data['choices'][0]['message']['content'],
             'model_used' => $model,
           ];
+
+          // Cache the successful result
+          $this->cache->set($cache_key, $result, time() + $cache_ttl, ['accessibility_chatbot']);
+
+          return $result;
         }
         else {
           $this->loggerFactory->get('accessibility')->error('Invalid OpenAI API response: @response', [
@@ -214,19 +251,54 @@ class ChatbotService {
    *   The formatted prompt.
    */
   private function buildAccessibilityPrompt($violation_id, $violation_description, $user_question) {
-    $base_prompt = "I have an accessibility violation on my website:\n\n";
-    $base_prompt .= "Violation: {$violation_id}\n";
-    $base_prompt .= "Description: {$violation_description}\n\n";
+    $base_prompt = "You are an expert accessibility consultant helping developers fix WCAG compliance issues.\n\n";
+    $base_prompt .= "## ACCESSIBILITY VIOLATION DETAILS\n\n";
+    $base_prompt .= "**Violation ID:** `{$violation_id}`\n";
+    $base_prompt .= "**Issue Description:** {$violation_description}\n\n";
 
     if (!empty($user_question)) {
-      $base_prompt .= "Specific question: {$user_question}\n\n";
+      $base_prompt .= "## USER'S SPECIFIC QUESTION\n\n";
+      $base_prompt .= "{$user_question}\n\n";
     }
 
-    $base_prompt .= "Please provide:\n";
-    $base_prompt .= "1. A clear explanation of why this is an accessibility issue\n";
-    $base_prompt .= "2. Specific code examples showing how to fix it\n";
-    $base_prompt .= "3. Best practices to prevent this issue in the future\n\n";
-    $base_prompt .= "Keep your response concise but practical, focusing on actionable solutions.";
+    $base_prompt .= "## REQUIRED RESPONSE FORMAT\n\n";
+    $base_prompt .= "Provide a comprehensive solution using the following structure:\n\n";
+    $base_prompt .= "### 🔍 **Why This Matters**\n";
+    $base_prompt .= "- Explain the accessibility impact and affected users\n";
+    $base_prompt .= "- Reference relevant WCAG guidelines and success criteria\n";
+    $base_prompt .= "- Describe potential legal and practical consequences\n\n";
+
+    $base_prompt .= "### 🛠️ **How to Fix It**\n";
+    $base_prompt .= "- Provide specific, actionable code examples\n";
+    $base_prompt .= "- Show both the problematic code and the corrected version\n";
+    $base_prompt .= "- Include language/framework-specific implementations when applicable\n";
+    $base_prompt .= "- Use proper syntax highlighting with language identifiers\n\n";
+
+    $base_prompt .= "### ✅ **Testing Your Fix**\n";
+    $base_prompt .= "- Provide manual testing steps\n";
+    $base_prompt .= "- Suggest automated testing tools or methods\n";
+    $base_prompt .= "- Include verification criteria\n\n";
+
+    $base_prompt .= "### 🚀 **Best Practices & Prevention**\n";
+    $base_prompt .= "- Share development workflow improvements\n";
+    $base_prompt .= "- Recommend tools, linters, or frameworks that help prevent this issue\n";
+    $base_prompt .= "- Suggest related accessibility considerations\n\n";
+
+    $base_prompt .= "## RESPONSE GUIDELINES\n\n";
+    $base_prompt .= "- Use proper markdown formatting with headers, code blocks, and lists\n";
+    $base_prompt .= "- Include specific code examples with language identifiers (```html, ```css, ```javascript, etc.)\n";
+    $base_prompt .= "- Be concise but thorough - focus on actionable solutions\n";
+    $base_prompt .= "- Consider different implementation scenarios (static sites, frameworks, CMS)\n";
+    $base_prompt .= "- Always provide context about why the solution works\n";
+    $base_prompt .= "- If multiple solutions exist, explain the trade-offs\n\n";
+
+    $base_prompt .= "## TECHNICAL CONTEXT\n\n";
+    $base_prompt .= "- This is for a web-based platform (likely Drupal or similar CMS)\n";
+    $base_prompt .= "- Solutions should work across modern browsers\n";
+    $base_prompt .= "- Consider both server-side and client-side implementations\n";
+    $base_prompt .= "- Account for progressive enhancement and graceful degradation\n\n";
+
+    $base_prompt .= "Remember: Your goal is to provide immediately actionable solutions that developers can implement confidently, while building their understanding of accessibility principles.";
 
     return $base_prompt;
   }
@@ -239,9 +311,75 @@ class ChatbotService {
    */
   public function isConfigured() {
     $config = $this->configFactory->get('accessibility.settings');
-    return $config->get('chatbot_enabled') && 
-           $config->get('chatbot_api_endpoint') && 
+    return $config->get('chatbot_enabled') &&
+           $config->get('chatbot_api_endpoint') &&
            $config->get('chatbot_api_key');
+  }
+
+  /**
+   * Generate a cache key based on the request parameters.
+   *
+   * @param string $violation_id
+   *   The violation ID.
+   * @param string $violation_description
+   *   The violation description.
+   * @param string $user_question
+   *   The user's specific question.
+   * @param string $model
+   *   The AI model being used.
+   *
+   * @return string
+   *   A unique cache key.
+   */
+  private function generateCacheKey($violation_id, $violation_description, $user_question, $model) {
+    // Create a hash of the input parameters to generate a unique key
+    $key_data = [
+      'violation_id' => $violation_id,
+      'violation_description' => $violation_description,
+      'user_question' => $user_question,
+      'model' => $model,
+    ];
+
+    $key_string = json_encode($key_data);
+    $hash = hash('sha256', $key_string);
+
+    return 'accessibility_chatbot:' . substr($hash, 0, 32);
+  }
+
+  /**
+   * Clear all cached chatbot responses.
+   *
+   * @return bool
+   *   TRUE if cache was cleared successfully, FALSE otherwise.
+   */
+  public function clearCache() {
+    try {
+      $this->cache->invalidateAll();
+      $this->loggerFactory->get('accessibility')->info('Chatbot cache cleared successfully');
+      return TRUE;
+    }
+    catch (\Exception $e) {
+      $this->loggerFactory->get('accessibility')->error('Failed to clear chatbot cache: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+      return FALSE;
+    }
+  }
+
+  /**
+   * Get cache statistics.
+   *
+   * @return array
+   *   Cache statistics including hit rates and usage.
+   */
+  public function getCacheStats() {
+    // This is a simple implementation - in a real-world scenario,
+    // you might want to track more detailed statistics
+    return [
+      'cache_enabled' => TRUE,
+      'cache_backend' => get_class($this->cache),
+      'note' => 'Detailed cache statistics require additional monitoring implementation',
+    ];
   }
 
 }

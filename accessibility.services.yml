@@ -20,3 +20,4 @@ services:
       - '@http_client'
       - '@config.factory'
       - '@logger.factory'
+      - '@cache.default'

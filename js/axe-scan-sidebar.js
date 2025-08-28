@@ -923,52 +923,202 @@
     }
   };
 
+  /**
+   * Enhanced markdown renderer for chatbot responses
+   */
+  function renderMarkdownToHtml(markdown) {
+    if (!markdown) return '';
+
+    let html = markdown;
+
+    // Convert code blocks (```language ... ```)
+    html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, language, code) {
+      language = language || '';
+      const langClass = language ? ` class="language-${language}"` : '';
+      const langLabel = language ? `<span class="code-lang">${language}</span>` : '';
+      return `<div class="code-block-wrapper">
+        ${langLabel}
+        <pre><code${langClass}>${escapeHtml(code.trim())}</code></pre>
+        <button class="copy-code-btn" onclick="copyCodeToClipboard(this)" title="Copy code">📋 Copy</button>
+      </div>`;
+    });
+
+    // Convert inline code (`code`)
+    html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
+    // Convert headers (# ## ###)
+    html = html.replace(/^### (.*$)/gim, '<h4>$1</h4>');
+    html = html.replace(/^## (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^# (.*$)/gim, '<h2>$1</h2>');
+
+    // Convert bold (**text**)
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert italic (*text*)
+    html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+    // Convert lists (- item or * item)
+    html = html.replace(/^[\*\-\+]\s+(.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+    // Convert numbered lists
+    html = html.replace(/^\d+\.\s+(.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)(?!<li>)/s, '$1</ol>');
+    html = html.replace(/(<li>.*<\/li>\n)+/s, function(match) {
+      if (match.includes('<ol>')) {
+        return match;
+      }
+      return '<ol>' + match + '</ol>';
+    });
+
+    // Convert paragraphs (double newlines)
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+
+    // Clean up empty paragraphs
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>\s*<ul>/g, '<ul>');
+    html = html.replace(/<\/ul>\s*<\/p>/g, '</ul>');
+    html = html.replace(/<p>\s*<ol>/g, '<ol>');
+    html = html.replace(/<\/ol>\s*<\/p>/g, '</ol>');
+
+    return html;
+  }
+
+  /**
+   * Copy code block to clipboard
+   */
+  window.copyCodeToClipboard = function(button) {
+    const codeBlock = button.previousElementSibling;
+    const code = codeBlock.textContent || codeBlock.innerText;
+
+    navigator.clipboard.writeText(code).then(() => {
+      const originalText = button.textContent;
+      button.textContent = '✅ Copied!';
+      button.style.background = '#4CAF50';
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = '';
+      }, 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      const originalText = button.textContent;
+      button.textContent = '✅ Copied!';
+      button.style.background = '#4CAF50';
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = '';
+      }, 2000);
+    });
+  };
+
   window.submitChatbotQuestion = function(containerId, violationId, violationDescription) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     const input = container.querySelector('.chatbot-question-input');
     const responseDiv = container.querySelector('.chatbot-response');
     const submitBtn = container.querySelector('.chatbot-submit-btn');
-    
+
     const userQuestion = input.value.trim();
-    
-    // Show loading state
-    responseDiv.innerHTML = '<div class="loading">🤔 Thinking...</div>';
+
+    // Enhanced loading state
+    responseDiv.innerHTML = `
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🤔 Analyzing accessibility issue...</div>
+        <div class="loading-subtext">This may take a moment</div>
+      </div>
+    `;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Getting Solution...';
-    
+    submitBtn.textContent = 'Analyzing...';
+
     // Prepare the AJAX request
     const formData = new FormData();
     formData.append('violation_id', violationId);
     formData.append('violation_description', violationDescription);
     formData.append('user_question', userQuestion);
-    
+
+    // Add timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     fetch('/accessibility/chatbot/ajax', {
       method: 'POST',
       body: formData,
       headers: {
         'X-Requested-With': 'XMLHttpRequest'
-      }
+      },
+      signal: controller.signal
     })
-    .then(response => response.json())
+    .then(response => {
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.success) {
+        const renderedSolution = renderMarkdownToHtml(data.solution);
         let solutionHtml = '<div class="chatbot-solution">';
-        solutionHtml += '<div class="solution-header">💡 AI Accessibility Solution</div>';
-        solutionHtml += '<div class="solution-content">' + data.solution.replace(/\n/g, '<br>') + '</div>';
+        const cacheIndicator = data.cached ? ' <span class="cache-indicator">(from cache)</span>' : '';
+        solutionHtml += '<div class="solution-header">💡 AI Accessibility Solution' + cacheIndicator + '</div>';
+        solutionHtml += '<div class="solution-content">' + renderedSolution + '</div>';
         if (data.model_used) {
-          solutionHtml += '<div class="solution-footer">Powered by ' + data.model_used + '</div>';
+          const cacheNote = data.cached ? ' <small class="cache-note">⚡ Instant response</small>' : '';
+          solutionHtml += '<div class="solution-footer">Powered by ' + escapeHtml(data.model_used) + cacheNote + '</div>';
         }
         solutionHtml += '</div>';
         responseDiv.innerHTML = solutionHtml;
+
+        // Add syntax highlighting if Prism is available
+        if (typeof Prism !== 'undefined') {
+          setTimeout(() => {
+            responseDiv.querySelectorAll('pre code').forEach((block) => {
+              Prism.highlightElement(block);
+            });
+          }, 100);
+        }
       } else {
-        responseDiv.innerHTML = '<div class="error">⚠️ ' + (data.error || 'Failed to get AI solution') + '</div>';
+        responseDiv.innerHTML = `
+          <div class="error">
+            <div class="error-icon">⚠️</div>
+            <div class="error-message">${escapeHtml(data.error || 'Failed to get AI solution')}</div>
+            <div class="error-help">Try rephrasing your question or check your internet connection.</div>
+          </div>
+        `;
       }
     })
     .catch(error => {
+      clearTimeout(timeoutId);
       console.error('Chatbot request failed:', error);
-      responseDiv.innerHTML = '<div class="error">⚠️ Network error. Please try again.</div>';
+
+      let errorMessage = 'Network error. Please try again.';
+      let errorHelp = 'Check your internet connection and try again.';
+
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out.';
+        errorHelp = 'The AI service took too long to respond. Please try again.';
+      } else if (error.message.includes('HTTP')) {
+        errorMessage = 'Server error.';
+        errorHelp = 'There was a problem with the AI service. Please try again later.';
+      }
+
+      responseDiv.innerHTML = `
+        <div class="error">
+          <div class="error-icon">⚠️</div>
+          <div class="error-message">${errorMessage}</div>
+          <div class="error-help">${errorHelp}</div>
+        </div>
+      `;
     })
     .finally(() => {
       submitBtn.disabled = false;

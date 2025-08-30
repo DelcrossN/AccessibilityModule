@@ -1,0 +1,67 @@
+/**
+ * @file
+ * Styles for the accessibility cache management page.
+ */
+
+.accessibility-cache-management {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.accessibility-cache-management .form-actions {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.accessibility-cache-management .button--danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.accessibility-cache-management .button--danger:hover,
+.accessibility-cache-management .button--danger:focus {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: white;
+}
+
+.accessibility-cache-management details summary {
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-weight: bold;
+}
+
+.accessibility-cache-management details[open] summary {
+  margin-bottom: 1rem;
+}
+
+.accessibility-cache-management .item-list ul,
+.accessibility-cache-management .item-list ol {
+  margin-left: 1rem;
+}
+
+.accessibility-cache-management .item-list li {
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.accessibility-cache-management details details {
+  margin-left: 1rem;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 1rem;
+}
+
+.accessibility-cache-management strong {
+  font-weight: 600;
+}
+
+.accessibility-cache-management a {
+  color: #0073aa;
+  text-decoration: none;
+}
+
+.accessibility-cache-management a:hover {
+  text-decoration: underline;
+}

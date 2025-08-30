@@ -1,0 +1,454 @@
+.accessibility-dashboard {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility comprehensive report container */
+.accessibility-comprehensive-report {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Force cache bust */
+body .violation-stats-cards {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin: 2rem auto !important;
+  max-width: 1200px !important;
+  padding: 0 2rem !important;
+  flex-wrap: wrap !important;
+}
+
+body .stats-card {
+  background: white !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  border-left: 4px solid !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s ease !important;
+  flex: 1 1 180px !important;
+  max-width: 200px !important;
+  min-width: 150px !important;
+  text-align: center !important;
+}
+
+/* Card background colors */
+body .stats-card.total-violations {
+  background: rgba(102, 102, 102, 0.05) !important;
+  border-left-color: #666 !important;
+}
+
+body .stats-card.critical-violations {
+  background: rgba(220, 53, 69, 0.05) !important;
+  border-left-color: #dc3545 !important;
+}
+
+body .stats-card.serious-violations {
+  background: rgba(245, 110, 40, 0.05) !important;
+  border-left-color: #f56e28 !important;
+}
+
+body .stats-card.moderate-violations {
+  background: rgba(255, 185, 0, 0.05) !important;
+  border-left-color: #ffb900 !important;
+}
+
+body .stats-card.minor-violations {
+  background: rgba(40, 167, 69, 0.05) !important;
+  border-left-color: #28a745 !important;
+}
+
+/* Violation stats cards for individual reports */
+.violation-stats-cards {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 0.5rem !important;
+  margin: 2rem auto !important;
+  max-width: 1200px !important;
+  padding: 0 2rem !important;
+}
+
+.stats-card {
+  background: white !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  border-left: 4px solid !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s ease !important;
+  flex: 1 !important;
+  min-width: 150px !important;
+  text-align: center !important;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stats-card.total-violations {
+  border-left-color: #666;
+}
+
+.stats-card.critical-violations {
+  border-left-color: #d63638;
+}
+
+.stats-card.serious-violations {
+  border-left-color: #f56e28;
+}
+
+.stats-card.moderate-violations {
+  border-left-color: #ffb900;
+}
+
+.stats-card.minor-violations {
+  border-left-color: #28a745;
+}
+
+/* Scan timestamp styling */
+.scan-timestamp {
+  color: #666 !important;
+  font-size: 0.9rem !important;
+  margin-top: 0.5rem !important;
+  font-style: italic !important;
+  display: block !important;
+}
+
+.card-content {
+  text-align: center;
+}
+
+.card-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.stats-card.total-violations .card-number {
+  color: #666;
+}
+
+.stats-card.critical-violations .card-number {
+  color: #d63638;
+}
+
+.stats-card.serious-violations .card-number {
+  color: #f56e28;
+}
+
+.stats-card.moderate-violations .card-number {
+  color: #ffb900;
+}
+
+.stats-card.minor-violations .card-number {
+  color: #46b450;
+}
+
+.dashboard-header {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dashboard-title {
+  margin: 0 0 0.5rem;
+  color: #232629;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.dashboard-intro {
+  margin: 0;
+  color: #4d4d4d;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+  width: 100%;
+}
+
+/* Vertical stats cards for sidebar */
+.violation-stats-cards-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0 1rem;
+}
+
+.violation-stats-cards-vertical .stats-card {
+  width: calc(100% - 2rem) !important;
+  max-width: none !important;
+  min-width: auto !important;
+  flex: none !important;
+  margin: 0 !important;
+}
+
+.violation-stats-cards-vertical .card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row !important;
+}
+
+.violation-stats-cards-vertical .card-label {
+  text-align: left;
+  margin-bottom: 0 !important;
+}
+
+.violation-stats-cards-vertical .card-number {
+  text-align: right;
+  margin-left: auto;
+}
+
+/* Page header with title and actions */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.page-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.page-actions {
+  display: flex;
+}
+
+/* Chart controls */
+.chart-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.chart-type-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-type-selector label {
+  font-weight: 500;
+  color: #333;
+}
+
+.chart-type-selector select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+}
+
+/* Chart canvas styling */
+#accessibility-chart {
+  width: 100% !important;
+  height: 400px !important;
+  max-width: 100%;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 450px;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* Spacing break */
+.spacing-break {
+  height: 1rem;
+}
+
+/* Sidebar headings and descriptions */
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.5rem 1rem 0.5rem 1rem;
+  color: #333;
+}
+
+.sidebar-description,
+.violations-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 1rem 1rem 1rem;
+  line-height: 1.4;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-card__icon {
+  margin-bottom: 1rem;
+  color: #3f51b5;
+  font-size: 2rem;
+}
+
+.action-card__title {
+  margin: 0 0 0.75rem;
+  color: #232629;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.action-card__description {
+  flex-grow: 1;
+  margin: 0 0 1.25rem;
+  color: #4d4d4d;
+  line-height: 1.5;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #3f51b5;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background: #303f9f;
+  color: white;
+}
+
+.button--primary {
+  background: #2563eb;
+}
+
+.button--primary:hover {
+  background: #1d4ed8;
+}
+
+.button--action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #4caf50;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.button--action:hover {
+  background: #43a047;
+}
+
+.dashboard-quick-actions {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+/* Debug styles */
+.dashboard-debug {
+  margin: 0 0 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.dashboard-debug summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.debug-content {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.debug-content ul {
+  margin: 0;
+  padding: 0 0 0 1.25rem;
+}
+
+.debug-content li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+/* Front page accessibility violations button */
+.accessibility-violations-wrapper {
+  margin: 2rem auto;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.accessibility-violations-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: #4caf50;
+  color: white !important;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.accessibility-violations-button:hover {
+  background: #45a049;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.accessibility-violations-button:focus {
+  outline: 3px solid rgba(76, 175, 80, 0.5);
+  outline-offset: 2px;
+}

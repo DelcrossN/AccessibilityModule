@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Accessibility module.
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * Defines the database schema for the accessibility_violations table.
+ */
+function accessibility_schema() {
+  $schema['accessibility_violations'] = [
+    'description' => 'Stores accessibility violation data from axe-core scans.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique ID for the violation record.',
+      ],
+      'scanned_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'The URL of the page that was scanned.',
+      ],
+      'impact' => [
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'description' => 'The impact level of the violation (e.g., critical, serious).',
+      ],
+      // Changed from 'text' to 'varchar' to allow for full indexing, improving
+      // performance on queries that group by this field (e.g., Top Issues).
+      'description' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'A description of the accessibility issue.',
+      ],
+      'help_url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => TRUE,
+        'description' => 'A URL to a page with more information about the issue.',
+      ],
+      'nodes' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'Serialized data about the HTML nodes that have the violation.',
+      ],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'The UNIX timestamp when the scan was performed.',
+      ],
+    ],
+    'primary key' => ['id'],
+    // Combined and optimized indexes for better query performance on the stats page.
+    'indexes' => [
+      // This composite index speeds up queries filtering by impact within a timeframe.
+      'timestamp_impact' => ['timestamp', 'impact'],
+      // This index speeds up queries grouping by description within a timeframe.
+      'timestamp_description' => ['timestamp', 'description'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Removes the accessibility_violations table when the module is uninstalled.
+ */
+function accessibility_uninstall() {
+  // Correctly access the schema service through the database connection.
+  \Drupal::database()->schema()->dropTable('accessibility_violations');
+}

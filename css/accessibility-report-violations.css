@@ -1,0 +1,322 @@
+/* Report page violations styling - copied from popup */
+
+/* Violations list */
+#report-violations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 0 2rem;
+}
+
+.violations-summary {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+/* Violation items */
+.violation-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid;
+  background: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.violation-item:hover {
+  background: #f0f0f0;
+  transform: translateX(2px);
+}
+
+/* Severity colors */
+.violation-item.critical {
+  border-left-color: #d63638;
+  background: #fef7f7;
+}
+
+.violation-item.serious {
+  border-left-color: #f56e28;
+  background: #fff8f3;
+}
+
+.violation-item.moderate {
+  border-left-color: #ffb900;
+  background: #fffbf0;
+}
+
+.violation-item.minor {
+  border-left-color: #46b450;
+  background: #f7fdf7;
+}
+
+.violation-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.violation-content {
+  flex: 1;
+}
+
+.violation-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.violation-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #1a1a1a;
+}
+
+.violation-status {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  background: #666;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.violation-item.critical .violation-status {
+  background: #d63638;
+}
+
+.violation-item.serious .violation-status {
+  background: #f56e28;
+}
+
+.violation-item.moderate .violation-status {
+  background: #ffb900;
+  color: black;
+}
+
+.violation-item.minor .violation-status {
+  background: #46b450;
+}
+
+.violation-description {
+  font-size: 0.9rem;
+  color: #4a4a4a;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+
+.violation-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Clickable instance count button */
+.violation-count {
+  background: #666;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.violation-count:hover {
+  background: #555;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.violation-count:active {
+  transform: translateY(0);
+}
+
+.violation-count:focus {
+  outline: 2px solid #0073aa;
+  outline-offset: 2px;
+}
+
+/* Severity-specific count buttons */
+.violation-item.critical .violation-count {
+  background: #d63638;
+}
+
+.violation-item.critical .violation-count:hover {
+  background: #b32629;
+}
+
+.violation-item.serious .violation-count {
+  background: #f56e28;
+}
+
+.violation-item.serious .violation-count:hover {
+  background: #e55a1c;
+}
+
+.violation-item.moderate .violation-count {
+  background: #ffb900;
+  color: black;
+}
+
+.violation-item.moderate .violation-count:hover {
+  background: #e6a600;
+}
+
+.violation-item.minor .violation-count {
+  background: #46b450;
+}
+
+.violation-item.minor .violation-count:hover {
+  background: #3a9940;
+}
+
+/* Learn more links */
+.learn-more-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.learn-more-link {
+  color: #0073aa;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.learn-more-link:hover {
+  color: #005a87;
+  text-decoration: underline;
+}
+
+/* No violations message */
+.no-violations {
+  text-align: center;
+  padding: 2rem;
+  color: #46b450;
+  font-size: 1.1rem;
+}
+
+/* Export Report Button Styling */
+.report-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.report-title-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.report-actions {
+  flex-shrink: 0;
+}
+
+/* Report header styles */
+.report-header {
+  background: transparent;
+  color: black;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.scanned-url {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.scanned-url a {
+  color: #0073aa;
+  text-decoration: underline;
+}
+
+.scanned-url a:hover {
+  color: #005a87;
+  text-decoration: none;
+}
+
+.export-report-button {
+  background: #0073aa;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-transform: none;
+  box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.export-report-button:hover {
+  background: #005a87;
+}
+
+.export-report-button:active {
+  background: #005a87;
+}
+
+.export-report-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.export-report-button .export-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .violation-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .violation-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .report-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .report-title-section {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .export-report-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

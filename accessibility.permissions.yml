@@ -1,0 +1,7 @@
+use accessibility tools:
+  title: 'Use accessibility tools'
+  description: 'Permission to use accessibility scanning tools and cache functionality'
+
+use accessibility chatbot:
+  title: 'Use accessibility chatbot'
+  description: 'Permission to use the AI-powered accessibility chatbot for getting violation solutions'

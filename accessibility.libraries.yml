@@ -1,0 +1,128 @@
+# Defines the external axe-core library as a reusable asset.
+axe-core:
+  remote: https://github.com/dequelabs/axe-core
+  version: '4.8.2'
+  license:
+    name: MPL-2.0
+    url: https://github.com/dequelabs/axe-core/blob/develop/LICENSE
+    gpl-compatible: true
+  js:
+    https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.8.2/axe.min.js: { type: external, minified: true }
+
+# Accessibility scanner functionality
+axe_scanner:
+  version: 1.x
+  js:
+    js/axe-scanner.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupalSettings
+    - accessibility/axe-core
+    - core/once
+
+# Chart.js library for data visualization
+chartjs:
+  remote: https://www.chartjs.org/
+  version: '4.4.1'
+  license:
+    name: MIT
+    url: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md
+    gpl-compatible: true
+  js:
+    https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js: { type: external, minified: true }
+  dependencies:
+    - core/jquery
+
+
+
+# Test violations page with axe scanner popup
+test_violations_styles:
+  version: 1.x
+  css:
+    theme:
+      css/test-violations.css: {}
+  js:
+    js/test-violations.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
+axe-popup:
+  version: 1.x
+  js:
+    js/axe-popup.js: {}
+    js/debug-axe-button.js: {} # Add this line temporarily
+  css:
+    theme:
+      css/axe-popup.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+
+# Axe scan sidebar block with popup functionality
+axe_scan_sidebar:
+  version: 1.x
+  js:
+    js/axe-scan-sidebar.js: {}
+  css:
+    theme:
+      css/axe-scan-sidebar.css: {}
+      css/chatbot-interface.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/once
+
+# Comprehensive accessibility report
+comprehensive_report:
+  version: 1.x
+  css:
+    theme:
+      css/accessibility-dashboard.css: { preprocess: false }
+      css/accessibility-stats.css: {}
+  js:
+    js/axe-scanner.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
+# Cache management page
+cache_management:
+  version: 1.x
+  css:
+    theme:
+      css/cache-management.css: {}
+  dependencies:
+    - core/drupal
+
+# Report violations rendering
+report_violations:
+  version: 1.x
+  css:
+    theme:
+      css/accessibility-report-violations.css: {}
+  js:
+    js/accessibility-report-violations.js: {}
+    js/accessibility-pdf-export.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+
+# Statistics page
+stats:
+  version: 1.x
+  css:
+    theme:
+      css/accessibility-dashboard.css: { preprocess: false }
+      css/accessibility-stats.css: {}
+  js:
+    js/accessibility-stats.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - accessibility/chartjs

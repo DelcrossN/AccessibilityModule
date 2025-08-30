@@ -1,0 +1,20 @@
+accessibility.dashboard:
+  title: 'Accessibility Dashboard'
+  description: 'Monitor and improve your site accessibility with our comprehensive tools and reports'
+  route_name: accessibility.dashboard
+  parent: accessibility.admin
+  weight: -10
+
+accessibility.settings:
+  title: 'Accessibility Settings'
+  description: 'Configure accessibility features'
+  route_name: accessibility.settings
+  parent: accessibility.admin
+  weight: 0
+
+accessibility.admin:
+  title: 'Accessibility'
+  description: 'Accessibility tools and settings'
+  route_name: accessibility.dashboard
+  parent: system.admin_config
+  weight: 100

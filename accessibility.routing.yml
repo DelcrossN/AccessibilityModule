@@ -1,0 +1,193 @@
+accessibility.settings:
+  path: '/admin/config/accessibility/settings'
+  defaults:
+    _form: 'Drupal\accessibility\Form\AccSettingsForm'
+    _title: 'Accessibility Settings'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Main dashboard for accessibility tools.
+accessibility.dashboard:
+  path: '/admin/config/accessibility'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::dashboard'
+    _title: 'Accessibility Dashboard'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Statistics overview page.
+accessibility.stats:
+  path: '/admin/reports/accessibility/stats'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::build'
+    _title: 'Accessibility Statistics'
+  requirements:
+    _access: 'TRUE'
+  options:
+    _admin_route: TRUE
+
+# Test endpoint to add scan data
+accessibility.test_scan:
+  path: '/admin/config/accessibility/test-scan'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityTestController::testScan'
+    _title: 'Test Scan'
+  requirements:
+    _access: 'TRUE'
+  options:
+    _admin_route: TRUE
+
+# Accessibility report for a specific path.
+accessibility.report:
+  path: '/admin/config/accessibility/report/{path}'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::report'
+    _title: 'Accessibility Report'
+    path: '/'
+  requirements:
+    _permission: 'administer site configuration'
+    path: '.+'
+  options:
+    _admin_route: TRUE
+
+# Comprehensive accessibility report with cards and URL list.
+accessibility.comprehensive_report:
+  path: '/admin/config/accessibility/report'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::comprehensiveReport'
+    _title: 'Accessibility Report'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Accessibility cache management page
+accessibility.cache_management:
+  path: '/admin/config/accessibility/cache'
+  defaults:
+    _controller: 'Drupal\accessibility\Controller\AccessibilityController::cacheManagement'
+    _title: 'Accessibility Cache Management'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+
+# AJAX endpoint for fetching updated statistics.
+accessibility.stats.ajax:
+  path: '/admin/reports/accessibility/stats/ajax'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::handleAjax'
+    _title: 'Accessibility Stats AJAX'
+  requirements:
+    _permission: 'administer site configuration'
+  methods: [GET]
+
+# Test endpoint to populate recent scan data for chart testing
+accessibility.stats.populate_test_data:
+  path: '/admin/reports/accessibility/populate-test-data'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::populateTestData'
+    _title: 'Populate Test Data'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+# Debug endpoint to check database and chart data
+accessibility.stats.debug_data:
+  path: '/admin/reports/accessibility/debug-data'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityStatsController::debugData'
+    _title: 'Debug Chart Data'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+
+# Axe Report
+accessibility.save_axe_report:
+  path: '/save-axe-report'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AxeReportController::saveReport'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
+
+# Accessibility Test Page with Violations
+accessibility.test_violations:
+  path: '/accessibility/test-violations'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityController::testViolations'
+    _title: 'Accessibility Test Page with Violations'
+  requirements:
+    _permission: 'access content'
+
+# AJAX endpoint for caching scan results
+accessibility.cache.scan_results:
+  path: '/accessibility/cache/scan-results'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityCacheController::cacheScanResults'
+  methods: [POST]
+  requirements:
+    _permission: 'use accessibility tools'
+
+# AJAX endpoint for recording scan button URLs
+accessibility.cache.record_scan_button:
+  path: '/accessibility/cache/record-scan-button'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityCacheController::recordScanButton'
+  methods: [POST]
+  requirements:
+    _permission: 'use accessibility tools'
+
+# AJAX endpoint for getting cached results
+accessibility.cache.get_results:
+  path: '/accessibility/cache/get-results'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityCacheController::getCachedResults'
+  methods: [GET]
+  requirements:
+    _permission: 'use accessibility tools'
+
+# AJAX endpoint for getting aggregated statistics
+accessibility.cache.get_stats:
+  path: '/accessibility/cache/get-stats'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityCacheController::getAggregatedStats'
+  methods: [GET]
+  requirements:
+    _permission: 'use accessibility tools'
+
+# AJAX endpoint for clearing cache
+accessibility.cache.clear:
+  path: '/accessibility/cache/clear'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityCacheController::clearCache'
+  methods: [POST]
+  requirements:
+    _permission: 'use accessibility tools'
+
+# AJAX endpoint for chatbot functionality
+accessibility.chatbot.ajax:
+  path: '/accessibility/chatbot/ajax'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\ChatbotController::handleRequest'
+  methods: [POST]
+  requirements:
+    _permission: 'use accessibility chatbot'
+
+accessibility.clear_test_data:
+  path: '/admin/config/accessibility/clear-data'
+  defaults:
+    _controller: '\Drupal\accessibility\Controller\AccessibilityTestController::clearData'
+    _title: 'Clear Test Data'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

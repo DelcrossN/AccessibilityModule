@@ -1,0 +1,100 @@
+{#
+/**
+ * @file
+ * Template for the Accessibility Dashboard.
+ *
+ * Available variables:
+ * - dashboard_url: URL to the dashboard page.
+ * - config_url: URL to the configuration page.
+ * - stats_url: URL to the statistics page.
+ * - report_url: URL to the accessibility report.
+ * - test_violations_url: URL to the test violations page.
+ * - debug: (optional) Boolean to enable debug information.
+ */
+#}
+<div class="accessibility-dashboard">
+  <header class="dashboard-header">
+    <h1 class="dashboard-title">{{ 'Accessibility Dashboard'|t }}</h1>
+    <p class="dashboard-intro">
+      {{ 'Monitor, inspect and adjust your site\'s accessibility with comprehensive reports and tools.'|t }}
+    </p>
+  </header>
+
+  {% if debug %}
+    <details class="dashboard-debug" open>
+      <summary>{{ 'Debug Information'|t }}</summary>
+      <div class="debug-content">
+        <ul>
+          <li><strong>{{ 'Dashboard:'|t }}</strong> {{ dashboard_url }}</li>
+          <li><strong>{{ 'Configuration:'|t }}</strong> {{ config_url }}</li>
+          <li><strong>{{ 'Statistics:'|t }}</strong> {{ stats_url }}</li>
+        </ul>
+      </div>
+    </details>
+  {% endif %}
+
+  <div class="dashboard-actions">
+    <div class="action-card">
+      <div class="action-card__icon">
+        <span class="dashicons dashicons-chart-bar"></span>
+      </div>
+      <div class="action-card__content">
+        <h3 class="action-card__title">{{ 'View Statistics'|t }}</h3>
+        <p class="action-card__description">
+          {{ 'Track accessibility improvements over time with detailed metrics.'|t }}
+        </p>
+        <a href="{{ stats_url }}" class="button button--primary">
+          {{ 'View Statistics'|t }}
+        </a>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-card__icon">
+        <span class="dashicons dashicons-analytics"></span>
+      </div>
+      <div class="action-card__content">
+        <h3 class="action-card__title">{{ 'Accessibility Report'|t }}</h3>
+        <p class="action-card__description">
+          {{ 'View detailed accessibility issues and recommendations.'|t }}
+        </p>
+        <a href="{{ report_url }}" class="button button--primary">
+          {{ 'View Report'|t }}
+        </a>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-card__icon">
+        <span class="dashicons dashicons-admin-settings"></span>
+      </div>
+      <div class="action-card__content">
+        <h3 class="action-card__title">{{ 'Configuration'|t }}</h3>
+        <p class="action-card__description">
+          {{ 'Customize accessibility settings and preferences.'|t }}
+        </p>
+        <a href="{{ config_url }}" class="button button--primary">
+          {{ 'Configure'|t }}
+        </a>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-card__icon">
+        <span class="dashicons dashicons-warning"></span>
+      </div>
+      <div class="action-card__content">
+        <h3 class="action-card__title">{{ 'Test Violations Page'|t }}</h3>
+        <p class="action-card__description">
+          {{ 'View a test page with intentional accessibility violations for scanner testing.'|t }}
+        </p>
+        <a href="{{ test_violations_url }}" class="button button--primary">
+          {{ 'View Test Page'|t }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{{ attach_library('accessibility/dashboard_styles') }}

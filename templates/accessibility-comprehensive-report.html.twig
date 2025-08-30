@@ -1,0 +1,150 @@
+{#
+/**
+ * @file
+ * Template for displaying comprehensive accessibility report with cards and URL list.
+ *
+ * Available variables:
+ * - violation_stats: Array of violation statistics by impact level.
+ * - total_violations: Total number of violations.
+ * - unique_pages: Number of unique pages scanned.
+ * - scanned_urls: Array of scanned URLs with their violation counts.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="accessibility-comprehensive-report">
+  <header class="report-header">
+    <h1 class="report-title">
+      {{ 'Accessibility Scan Overview'|t }}
+    </h1>
+  </header>
+
+  <div class="violation-stats-cards">
+    <div class="stats-card unique-pages">
+      <div class="card-content">
+        <div class="card-number">{{ unique_pages }}</div>
+        <div class="card-label">{{ 'UNIQUE PAGES SCANNED'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card total-violations">
+      <div class="card-content">
+        <div class="card-number">{{ total_violations }}</div>
+        <div class="card-label">{{ 'TOTAL VIOLATIONS'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card critical-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_stats.critical }}</div>
+        <div class="card-label">{{ 'CRITICAL'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card serious-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_stats.serious }}</div>
+        <div class="card-label">{{ 'SERIOUS'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card moderate-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_stats.moderate }}</div>
+        <div class="card-label">{{ 'MODERATE'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card minor-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_stats.minor }}</div>
+        <div class="card-label">{{ 'MINOR'|t }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-intro-section">
+    <p class="report-intro">
+      {{ 'Select a specific webpage on this website among the options given below to review and analyze current accessibility status:'|t }}
+    </p>
+  </div>
+
+  <div class="scanned-urls-section">
+    {% if scanned_urls is not empty %}
+      {% for url_data in scanned_urls %}
+        <div class="url-item">
+          <div class="url-info">
+            <h3 class="url-title">
+              {% set url_parts = url_data.scanned_url|split('/') %}
+              {% set domain_index = -1 %}
+              
+              {# Find the domain part (ends with .site, .com, etc.) #}
+              {% for i, part in url_parts %}
+                {% if '.site' in part or '.com' in part or '.org' in part or '.net' in part %}
+                  {% set domain_index = i %}
+                {% endif %}
+              {% endfor %}
+              
+              {# Get the path parts after the domain #}
+              {% set path_parts = url_parts|slice(domain_index + 1) %}
+              {% set path_parts = path_parts|filter(part => part != '') %}
+              
+              {% set prefix = '' %}
+              
+              {% if path_parts|length == 0 %}
+                {# Rule 1: Nothing after slash -> "Main" #}
+                {% set prefix = 'Main' %}
+              {% elseif path_parts|length == 1 %}
+                {# Rule 2: Single word -> use that word #}
+                {% if '-' in path_parts[0] %}
+                  {# Rule 3: Multiple words with hyphens -> replace hyphens with spaces #}
+                  {% set prefix = path_parts[0]|replace({'-': ' '})|title %}
+                {% else %}
+                  {% set prefix = path_parts[0]|title %}
+                {% endif %}
+              {% else %}
+                {# Rule 4: Multiple path segments -> use last two words #}
+                {% set last_parts = path_parts|slice(-2) %}
+                {% set combined_parts = [] %}
+                {% for part in last_parts %}
+                  {% set combined_parts = combined_parts|merge([part|replace({'-': ' '})]) %}
+                {% endfor %}
+                {% set prefix = combined_parts|join(' ')|title %}
+              {% endif %}
+              
+              {{ prefix }} Page
+            </h3>
+            <div class="url-address">{{ url_data.scanned_url }}</div>
+          </div>
+          <div class="url-actions">
+            {% set path_part = url_data.scanned_url|split('//')|last|split('/')|slice(1)|join('/') %}
+            {# Generate robust slug from actual URL path, fallback to title-based slug #}
+            {% if path_part and path_part != '' %}
+              {# Use actual URL path, clean it up for slug format #}
+              {% set page_slug = path_part|lower|replace({'/': '-', '_': '-', ' ': '-', '.': '-'})|replace({'--': '-'})|trim('-') %}
+              {# Handle edge cases: remove common file extensions and clean up #}
+              {% set page_slug = page_slug|replace({'.html': '', '.php': '', '.htm': ''}) %}
+              {# Ensure slug isn't empty after cleaning #}
+              {% if page_slug == '' %}
+                {% set page_slug = 'home' %}
+              {% endif %}
+            {% else %}
+              {# Fallback to title-based slug for root/home pages #}
+              {% set page_slug = (prefix ~ ' Page')|lower|replace({' ': '-', '_': '-'})|replace({'--': '-'})|trim('-') %}
+            {% endif %}
+            <a href="{{ url_data.scanned_url }}?auto_scan=1" class="btn btn-primary scan-btn" target="_blank">
+              {{ 'Scan This Page'|t }}
+            </a>
+            <a href="{{ path('accessibility.report', {'path': page_slug}) }}" class="btn btn-secondary view-report-btn">
+              {{ 'View Report'|t }}
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-scans-message">
+        <p>{{ 'No scans have been performed yet. Start by running the Axe accessibility scanner on your pages.'|t }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>

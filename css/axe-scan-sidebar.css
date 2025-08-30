@@ -1,0 +1,733 @@
+/**
+ * Axe Scan Sidebar Block Styles with Sliding Popup
+ */
+
+/* Block wrapper */
+.axe-scan-block-wrapper {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+/* Main scan button */
+.axe-scan-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #2c5282;
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+  justify-content: center;
+}
+
+.axe-scan-button:hover:not(:disabled) {
+  background: #2a4a7c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(44, 82, 130, 0.3);
+}
+
+.axe-scan-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.axe-scan-button.scanning {
+  background: #666;
+}
+
+/* Popup overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.popup-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Popup content */
+.popup-content {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30%;
+  min-width: 350px;
+  max-width: 70%;
+  height: 100vh;
+  background: white;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  transform: translateX(100%);
+  transition: transform 0.3s ease, height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px 0 0 20px;
+  overflow: hidden;
+}
+
+/* Remove resize functionality completely */
+
+.popup-overlay.active .popup-content {
+  transform: translateX(0);
+}
+
+/* Minimized state with smooth animation */
+.popup-content.minimized {
+  height: 60px !important;
+  min-height: 60px !important;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.popup-content.minimized .popup-body {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+}
+
+.popup-content.minimized .popup-footer {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: none;
+  overflow: hidden;
+}
+
+.popup-content:not(.minimized) .popup-body {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  pointer-events: all;
+  height: auto;
+  padding: 1.25rem 1.5rem;
+}
+
+.popup-content.minimized .popup-header {
+  border-radius: 20px 0 0 20px;
+}
+
+/* Remove overlay effect when minimized */
+.popup-overlay.minimized {
+  background: transparent;
+  pointer-events: none;
+}
+
+.popup-overlay.minimized .popup-content {
+  pointer-events: all;
+}
+
+/* Popup header */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #2c5282;
+  color: white;
+  flex-shrink: 0;
+  border-radius: 20px 0 0 0;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: white;
+}
+
+/* Popup controls container */
+.popup-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#minimize-popup,
+#close-popup {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+  font-weight: normal;
+}
+
+#minimize-popup:hover,
+#close-popup:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#minimize-popup {
+  font-size: 1rem;
+  font-weight: normal;
+  line-height: 1;
+  color: white;
+}
+
+/* Popup body */
+.popup-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 0 1.5rem;
+  background: #f8f9fa;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+}
+
+/* Popup footer - fixed at bottom, hidden by default */
+.popup-footer {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  display: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.popup-footer.show {
+  display: block;
+}
+
+.full-report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #2c5282;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.full-report-button:hover {
+  background: #2a4a7c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(44, 82, 130, 0.3);
+  color: white !important;
+  text-decoration: none;
+}
+
+.full-report-button:focus {
+  outline: 2px solid #2c5282;
+  outline-offset: 2px;
+}
+
+/* Violations list */
+#violations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-bottom: 1rem;
+}
+
+.violations-summary {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid #2c5282;
+  color: #1a365d;
+  background: #e6f3ff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Violation items */
+.violation-item {
+  display: flex;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  border-radius: 6px;
+  border-left: 4px solid;
+  background: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.25rem;
+}
+
+.violation-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Severity colors - with light background fills */
+.violation-item.critical {
+  border-left-color: #e53e3e;
+  background: #fef2f2;
+}
+
+.violation-item.serious {
+  border-left-color: #dd6b20;
+  background: #fef7ed;
+}
+
+.violation-item.moderate {
+  border-left-color: #d69e2e;
+  background: #fefce8;
+}
+
+.violation-item.minor {
+  border-left-color: #38a169;
+  background: #f0fdf4;
+}
+
+.violation-icon {
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  text-align: center;
+  margin-top: 0.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: white;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Severity-specific icon backgrounds */
+.violation-item.critical .violation-icon {
+  background-color: #e53e3e;
+}
+
+.violation-item.serious .violation-icon {
+  background-color: #dd6b20;
+}
+
+.violation-item.moderate .violation-icon {
+  background-color: #d69e2e;
+}
+
+.violation-item.minor .violation-icon {
+  background-color: #38a169;
+}
+
+.violation-content {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.violation-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.violation-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2d3748;
+  letter-spacing: 0.25px;
+  flex: 1;
+}
+
+.violation-status {
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  color: white;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Severity-specific status colors */
+.violation-item.critical .violation-status {
+  background-color: #e53e3e;
+}
+
+.violation-item.serious .violation-status {
+  background-color: #dd6b20;
+}
+
+.violation-item.moderate .violation-status {
+  background-color: #d69e2e;
+}
+
+.violation-item.minor .violation-status {
+  background-color: #38a169;
+}
+
+.violation-description {
+  font-size: 0.85rem;
+  color: #4a5568;
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+/* Violation actions container */
+.violation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+/* Learn more links container */
+.learn-more-links {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+/* Learn more link styles */
+.learn-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  border: 1px solid #1e3a8a;
+  white-space: nowrap;
+  background: #1e3a8a;
+  color: white;
+}
+
+.learn-more-link:hover {
+  background: #1e40af;
+  border-color: #1e40af;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(30, 58, 138, 0.3);
+}
+
+/* Clickable instance count button - matching reference style */
+.violation-count {
+  background: #718096;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+.violation-count:hover {
+  background: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.violation-count:active {
+  transform: translateY(0);
+}
+
+.violation-count:focus {
+  outline: 2px solid #2c5282;
+  outline-offset: 2px;
+}
+
+/* Severity-specific count buttons - more subtle colors */
+.violation-item.critical .violation-count {
+  background: #e53e3e;
+}
+
+.violation-item.critical .violation-count:hover {
+  background: #c53030;
+}
+
+.violation-item.serious .violation-count {
+  background: #dd6b20;
+}
+
+.violation-item.serious .violation-count:hover {
+  background: #c05621;
+}
+
+.violation-item.moderate .violation-count {
+  background: #d69e2e;
+  color: white;
+}
+
+.violation-item.moderate .violation-count:hover {
+  background: #b7791f;
+}
+
+.violation-item.minor .violation-count {
+  background: #38a169;
+}
+
+.violation-item.minor .violation-count:hover {
+  background: #2f855a;
+}
+
+/* No violations message */
+.no-violations {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #38a169;
+  font-size: 1rem;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Scanning message */
+.scanning-message {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #4a5568;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.scanning-message p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  margin: 0;
+  font-style: normal;
+}
+
+/* New loading spinner icon */
+.scanning-message .scan-icon,
+.axe-scan-button.scanning .scan-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #4299e1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error message */
+.scan-error {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #e53e3e;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #fed7d7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight animations */
+@keyframes highlightPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Notification styles */
+.highlight-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2c5282;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(44, 82, 130, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.highlight-notification p {
+  margin: 0;
+  flex: 1;
+  font-weight: 500;
+}
+
+.clear-highlights-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.clear-highlights-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Make sure highlights work on all screen sizes */
+.accessibility-highlight {
+  min-width: 10px;
+  min-height: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .popup-header {
+    border-radius: 0;
+  }
+}
+
+/* Additional utility classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus styles for accessibility */
+.axe-scan-button:focus,
+#minimize-popup:focus,
+#close-popup:focus {
+  outline: 2px solid #2c5282;
+  outline-offset: 2px;
+}
+
+/* Ensure proper contrast for all text */
+.violation-title {
+  color: #1a1a1a;
+}
+
+.violation-description {
+  color: #4a4a4a;
+}
+
+/* Hide the old results container since we're using popup now */
+.axe-scan-results-container {
+  display: none !important;
+}
+
+/* Chatbot opt-in checkbox styling - left-aligned checkbox with text to the right */
+.axe-scan-block-wrapper .form-type-checkbox,
+.axe-scan-block-wrapper .form-item,
+.axe-scan-block-wrapper .js-form-type-checkbox {
+  margin-top: 0.75rem;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.axe-scan-block-wrapper .form-type-checkbox input[type="checkbox"],
+.axe-scan-block-wrapper .form-item input[type="checkbox"],
+.axe-scan-block-wrapper .js-form-type-checkbox input[type="checkbox"] {
+  margin: 0 !important;
+  flex-shrink: 0;
+  order: 1;
+  margin-top: 2px;
+}
+
+.axe-scan-block-wrapper .form-type-checkbox .form-item__label,
+.axe-scan-block-wrapper .form-type-checkbox label,
+.axe-scan-block-wrapper .form-item label,
+.axe-scan-block-wrapper .js-form-type-checkbox label {
+  font-size: 0.9rem;
+  color: #4a4a4a;
+  margin: 0 !important;
+  order: 2;
+  line-height: 1.2;
+  text-align: left !important;
+  flex-grow: 1;
+}
+
+/* Allow HTML in labels to render line breaks */
+.axe-scan-block-wrapper label[for="enable-chatbot-help"] {
+  word-wrap: break-word !important;
+  text-align: left !important;
+  display: inline-block !important;
+}
+
+/* Additional fallback selectors */
+#enable-chatbot-help {
+  margin: 0 !important;
+}

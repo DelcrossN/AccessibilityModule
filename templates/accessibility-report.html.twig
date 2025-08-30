@@ -1,0 +1,82 @@
+{#
+/**
+ * @file
+ * Template for displaying Accessibility scan reports.
+ *
+ * Available variables:
+ * - cached_violations: Array of cached violation data.
+ * - violation_counts: Array of violation counts by severity.
+ * - scanned_url: The URL that was scanned.
+ * - scan_timestamp: When the scan was performed.
+ * - page_title: The friendly page title.
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="accessibility-comprehensive-report">
+  <header class="report-header">
+    <div class="report-header-content">
+      <div class="report-title-section">
+        <h1 class="report-title">
+          {{ page_title|default('Accessibility Report') }}
+        </h1>
+        {% if scanned_url %}
+        <div class="scanned-url">
+          <strong>{{ 'URL Scanned:'|t }}</strong> <a href="{{ scanned_url }}" target="_blank">{{ scanned_url }}</a>
+        </div>
+        {% endif %}
+        <div class="scan-timestamp">
+          Last Scan Run: {{ "now"|date('m/d') }} at {{ "now"|date('H:i:s', 'Asia/Kolkata') }}
+        </div>
+      </div>
+      <div class="report-actions">
+        <button id="export-report-btn" class="btn btn-primary export-report-button" type="button">
+          {{ 'Export Report'|t }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  {# Statistics Cards - matching comprehensive report style #}
+  <div class="violation-stats-cards">
+    <div class="stats-card total-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_counts.total|default(0) }}</div>
+        <div class="card-label">{{ 'TOTAL VIOLATIONS'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card critical-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_counts.critical|default(0) }}</div>
+        <div class="card-label">{{ 'CRITICAL'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card serious-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_counts.serious|default(0) }}</div>
+        <div class="card-label">{{ 'SERIOUS'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card moderate-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_counts.moderate|default(0) }}</div>
+        <div class="card-label">{{ 'MODERATE'|t }}</div>
+      </div>
+    </div>
+
+    <div class="stats-card minor-violations">
+      <div class="card-content">
+        <div class="card-number">{{ violation_counts.minor|default(0) }}</div>
+        <div class="card-label">{{ 'MINOR'|t }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# Violations List - Using JavaScript rendering like popup #}
+  <div id="report-violations-list">
+    <!-- Violations will be rendered here by JavaScript -->
+  </div>
+</div>

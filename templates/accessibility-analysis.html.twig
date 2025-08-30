@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * Default theme implementation for displaying LLM analysis results.
+ *
+ * Available variables:
+ * - result: The analysis result text from Mistral 7B.
+ * - timestamp: The Unix timestamp when the analysis was performed.
+ */
+#}
+<div class="analysis-result">
+  <div class="analysis-meta">
+    <span class="analysis-timestamp">{{ timestamp|date('Y-m-d H:i:s') }}</span>
+    <button class="copy-result" title="{{ 'Copy to clipboard'|t }}">{{ 'Copy'|t }}</button>
+  </div>
+  <div class="analysis-content">
+    <h3>{{ 'Accessibility Analysis Results'|t }}</h3>
+    {{ result|nl2br }}
+  </div>
+</div>

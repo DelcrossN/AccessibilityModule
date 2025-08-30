@@ -1,0 +1,249 @@
+{#
+/**
+ * @file
+ * Template for the Accessibility Statistics page.
+ *
+ * Available variables:
+ * - dashboard_url: URL to the dashboard.
+ * - config_url: URL to the configuration page.
+ *
+ * @ingroup themeable
+ */
+#}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ attach_library('accessibility/stats') }}
+
+<div class="accessibility-stats">
+
+  <div class="page-header">
+    <div class="page-title">
+      <h2>{{ 'Frequency of Accessibility Scans'|t }}</h2>
+      <p class="page-description">{{ 'Monitors how many times an accessibility scan was triggered throughout this website, across the period of a week.'|t }}</p>
+    </div>
+    <div class="page-actions">
+      <a href="{{ dashboard_url }}" class="button button--secondary">
+        <span class="icon icon-arrow-left"></span> {{ 'Back to Dashboard'|t }}
+      </a>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-wrapper">
+      <div class="chart-controls">
+        <div class="chart-type-selector">
+          <label for="chart-type">{{ 'Chart Type:'|t }}</label>
+          <select id="chart-type" class="form-select">
+            <option value="line">{{ 'Line Chart'|t }}</option>
+            <option value="bar">{{ 'Bar Chart'|t }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="chart-canvas-container">
+        <canvas id="accessibility-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-sidebar">
+      <div class="chart-sidebar__section">
+        <h3 class="sidebar-title">{{ 'Accessibility Summary'|t }}</h3>
+        <p class="sidebar-description">{{ 'A review of accessibility across this website indicates:'|t }}</p>
+        
+        <div class="violation-stats-cards-vertical">
+          <div class="stats-card unique-pages">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ unique_pages }}</div>
+              <div class="stats-card__title">{{ 'UNIQUE PAGES SCANNED'|t }}</div>
+            </div>
+          </div>
+
+          <div class="stats-card total-violations">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ total_violations }}</div>
+              <div class="stats-card__title">{{ 'TOTAL VIOLATIONS'|t }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="spacing-break"></div>
+        
+        <p class="violations-description">{{ 'These violations are categorized as:'|t }}</p>
+        
+        <div class="violation-stats-cards-vertical">
+          <div class="stats-card critical-violations">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ violation_stats.critical }}</div>
+              <div class="stats-card__title">{{ 'CRITICAL'|t }}</div>
+            </div>
+          </div>
+
+          <div class="stats-card serious-violations">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ violation_stats.serious }}</div>
+              <div class="stats-card__title">{{ 'SERIOUS'|t }}</div>
+            </div>
+          </div>
+
+          <div class="stats-card moderate-violations">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ violation_stats.moderate }}</div>
+              <div class="stats-card__title">{{ 'MODERATE'|t }}</div>
+            </div>
+          </div>
+
+          <div class="stats-card minor-violations">
+            <div class="stats-card__content">
+              <div class="stats-card__value">{{ violation_stats.minor }}</div>
+              <div class="stats-card__title">{{ 'MINOR'|t }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, initializing chart...');
+  
+  const canvas = document.getElementById('accessibility-chart');
+  if (!canvas) {
+    console.error('Canvas not found');
+    return;
+  }
+  
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js not loaded');
+    return;
+  }
+  
+  // Try to get real data from Drupal settings
+  let chartData = [];
+  if (typeof drupalSettings !== 'undefined' && 
+      drupalSettings.accessibility && 
+      drupalSettings.accessibility.chartData) {
+    chartData = drupalSettings.accessibility.chartData;
+  }
+  
+  // Prepare data for chart
+  const labels = [];
+  const data = [];
+  
+  if (chartData && chartData.length > 0) {
+    // Use real data from backend
+    for (let item of chartData) {
+      labels.push(item.date);
+      data.push(item.count);
+    }
+  } else {
+    // If no data available, show empty chart with last 7 days
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      data.push(0); // Zero data indicates no scans were performed
+    }
+  }
+  
+  const chart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Daily Scans Performed',
+        data: data,
+        borderColor: 'rgb(54, 162, 235)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        tension: 0.1,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          top: 20,
+          right: 20,
+          bottom: 20,
+          left: 20
+        }
+      },
+      elements: {
+        point: {
+          radius: 6,
+          hoverRadius: 8
+        },
+        line: {
+          borderWidth: 3
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            font: {
+              size: 14
+            }
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.1)'
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 14
+            }
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            font: {
+              size: 16
+            },
+            padding: 20
+          }
+        }
+      }
+    }
+  });
+  
+  console.log('Chart initialized');
+  
+  // Force the chart to resize and fill the container
+  setTimeout(() => {
+    chart.resize();
+    chart.update('resize');
+  }, 100);
+  
+  // Also force resize on window resize
+  window.addEventListener('resize', () => {
+    chart.resize();
+  });
+  
+  // Handle chart type changes
+  const chartTypeSelector = document.getElementById('chart-type');
+  if (chartTypeSelector) {
+    chartTypeSelector.addEventListener('change', function() {
+      chart.config.type = this.value;
+      chart.update();
+    });
+  }
+});
+</script>
+
+
+{# This element is now just a marker for JavaScript and no longer holds data. #}
+<div id="chart-data" style="display: none;"></div>

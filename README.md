@@ -123,25 +123,6 @@ The accessibility tools sidebar creates an interactive popup interface that:
 
 The popup system works on any page where the sidebar block is placed, providing immediate accessibility feedback without requiring navigation away from the current content.
 
-## Usage Guide
-
-### Setting Up Page Scanning
-1. Place the "Accessibility Tools" block on desired pages through `/admin/structure/block`
-2. Configure block visibility settings to control where scanning is available
-3. Users can then click the accessibility scan button on any configured page
-4. Results appear in a slide-out popup with detailed violation information
-
-### Generating Comprehensive Reports
-1. Navigate to `/admin/config/accessibility/report` for site-wide reporting
-2. Access individual page reports at `/admin/config/accessibility/report/{path}`
-3. Use the statistics page for trend analysis and performance monitoring
-4. Export reports in various formats for compliance documentation
-
-### AI Analysis Configuration
-1. Obtain a Google Gemini Flash API key from Google AI Studio
-2. Configure the API key in the module settings
-3. Adjust AI analysis parameters (temperature, token limits) as needed
-4. Test functionality using the dedicated LLM test page
 
 ## Technical Architecture
 
